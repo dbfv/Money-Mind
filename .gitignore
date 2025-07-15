@@ -75,4 +75,16 @@ jspm_packages/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db 
+Thumbs.db
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
+start-docker.bat
+DOCKER_README.md
+*.dockerfile
+docker-compose.*.yml
+docker-compose.*.yaml
+.docker/
+docker/ 

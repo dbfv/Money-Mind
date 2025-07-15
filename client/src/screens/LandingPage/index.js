@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import Iridescence from '../../components/Iridescence';
 
 const LandingPage = () => {
     const containerVariants = {
@@ -47,25 +48,16 @@ const LandingPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
-            {/* Background Elements */}
-            <motion.div
-                className="absolute top-20 left-20 w-32 h-32 bg-blue-200 rounded-full opacity-20"
-                variants={floatingVariants}
-                animate="float"
-            />
-            <motion.div
-                className="absolute bottom-20 right-20 w-24 h-24 bg-purple-200 rounded-full opacity-20"
-                variants={floatingVariants}
-                animate="float"
-                style={{ animationDelay: '1s' }}
-            />
-            <motion.div
-                className="absolute top-1/2 left-10 w-16 h-16 bg-indigo-200 rounded-full opacity-20"
-                variants={floatingVariants}
-                animate="float"
-                style={{ animationDelay: '2s' }}
-            />
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+            {/* Iridescence Background */}
+            <div className="absolute inset-0">
+                <Iridescence
+                    color={[1, 1, 1]}
+                    speed={0.8}
+                    amplitude={0.05}
+                    mouseReact={true}
+                />
+            </div>
 
             <motion.div
                 className="text-center max-w-4xl mx-auto px-8"

@@ -55,9 +55,12 @@ const LandingPage = () => {
                     color={[1, 1, 1]}
                     speed={0.8}
                     amplitude={0.05}
-                    mouseReact={true}
+                    mouseReact={false}
                 />
             </div>
+
+            {/* Invisible overlay to prevent mouse interaction with background */}
+            <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }} />
 
             <motion.div
                 className="text-center max-w-4xl mx-auto px-8 relative z-10"

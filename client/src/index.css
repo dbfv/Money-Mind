@@ -85,31 +85,8 @@ input:focus {
 /* Shiny text animation */
 .shiny-text {
   position: relative;
-  background: linear-gradient(
-    90deg,
-    #3b82f6 0%,
-    #8b5cf6 25%,
-    #6366f1 50%,
-    #8b5cf6 75%,
-    #3b82f6 100%
-  );
-  background-size: 200% 100%;
-  animation: shine 3s ease-in-out infinite;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-@keyframes shine {
-  0% {
-    background-position: 200% 0;
-  }
-  50% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  display: inline-block;
+  overflow: hidden;
 }
 
 /* Shiny overlay effect */
@@ -118,7 +95,7 @@ input:focus {
   position: absolute;
   top: 0;
   left: -100%;
-  width: 100%;
+  width: 30%;
   height: 100%;
   background: linear-gradient(
     90deg,
@@ -126,7 +103,9 @@ input:focus {
     rgba(255, 255, 255, 0.4),
     transparent
   );
-  animation: shimmer 2s ease-in-out infinite;
+  animation: shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
 }
 
 @keyframes shimmer {

@@ -60,7 +60,7 @@ const LandingPage = () => {
             </div>
 
             <motion.div
-                className="text-center max-w-4xl mx-auto px-8"
+                className="text-center max-w-4xl mx-auto px-8 relative z-10"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"

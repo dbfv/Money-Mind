@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
+import Dropdown from '../../components/Dropdown';
 
 const JournalPage = () => {
     const location = useLocation();
@@ -268,27 +269,19 @@ const JournalPage = () => {
                                     </div>
 
                                     {/* Type */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Type *
-                                        </label>
-                                        <div className="relative">
-                                            <select
-                                                name="type"
-                                                value={formData.type}
-                                                onChange={handleInputChange}
-                                                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white cursor-pointer hover:border-gray-400 focus:shadow-lg"
-                                            >
-                                                <option value="expense">Expense</option>
-                                                <option value="income">Income</option>
-                                            </select>
-                                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <Dropdown
+                                        label="Type"
+                                        name="type"
+                                        value={formData.type}
+                                        onChange={handleInputChange}
+                                        options={[
+                                            { value: 'expense', label: 'Expense' },
+                                            { value: 'income', label: 'Income' }
+                                        ]}
+                                        error={errors.type}
+                                        placeholder="Select type"
+                                        required
+                                    />
 
                                     {/* Date */}
                                     <div>
@@ -324,66 +317,28 @@ const JournalPage = () => {
                                     </div>
 
                                     {/* Category */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Category *
-                                        </label>
-                                        <div className="relative">
-                                            <select
-                                                name="category"
-                                                value={formData.category}
-                                                onChange={handleInputChange}
-                                                className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white cursor-pointer hover:border-gray-400 focus:shadow-lg ${errors.category ? 'border-red-500' : 'border-gray-300'
-                                                    }`}
-                                            >
-                                                <option value="">Select a category</option>
-                                                {categories.map(category => (
-                                                    <option key={category._id} value={category._id}>
-                                                        {category.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        {errors.category && (
-                                            <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-                                        )}
-                                    </div>
+                                    <Dropdown
+                                        label="Category"
+                                        name="category"
+                                        value={formData.category}
+                                        onChange={handleInputChange}
+                                        options={categories.map(c => ({ value: c._id, label: c.name }))}
+                                        error={errors.category}
+                                        placeholder="Select a category"
+                                        required
+                                    />
 
                                     {/* Source */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Source *
-                                        </label>
-                                        <div className="relative">
-                                            <select
-                                                name="source"
-                                                value={formData.source}
-                                                onChange={handleInputChange}
-                                                className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white cursor-pointer hover:border-gray-400 focus:shadow-lg ${errors.source ? 'border-red-500' : 'border-gray-300'
-                                                    }`}
-                                            >
-                                                <option value="">Select a source</option>
-                                                {sources.map(source => (
-                                                    <option key={source._id} value={source._id}>
-                                                        {source.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        {errors.source && (
-                                            <p className="text-red-500 text-sm mt-1">{errors.source}</p>
-                                        )}
-                                    </div>
+                                    <Dropdown
+                                        label="Source"
+                                        name="source"
+                                        value={formData.source}
+                                        onChange={handleInputChange}
+                                        options={sources.map(s => ({ value: s._id, label: s.name }))}
+                                        error={errors.source}
+                                        placeholder="Select a source"
+                                        required
+                                    />
 
                                     {/* Submit Error */}
                                     {errors.submit && (

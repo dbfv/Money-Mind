@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Dropdown from '../../components/Dropdown';
 
 const SourceManagementPage = () => {
     const [sources, setSources] = useState([]);
@@ -95,18 +96,36 @@ const SourceManagementPage = () => {
                 <form className="bg-white rounded-lg shadow p-6 mb-8 grid grid-cols-1 gap-4" onSubmit={handleSubmit}>
                     <div className="grid grid-cols-2 gap-4">
                         <input name="name" value={form.name} onChange={handleChange} placeholder="Source Name" required className="border p-2 rounded" />
-                        <select name="type" value={form.type} onChange={handleChange} className="border p-2 rounded">
-                            <option>Bank Account</option>
-                            <option>E-Wallet</option>
-                            <option>Cash</option>
-                            <option>Other</option>
-                        </select>
+                        <Dropdown
+                            label={null}
+                            name="type"
+                            value={form.type}
+                            onChange={handleChange}
+                            options={[
+                                { value: 'Bank Account', label: 'Bank Account' },
+                                { value: 'E-Wallet', label: 'E-Wallet' },
+                                { value: 'Cash', label: 'Cash' },
+                                { value: 'Other', label: 'Other' },
+                            ]}
+                            placeholder="Type"
+                            className=""
+                            required
+                        />
                         <input name="balance" value={form.balance} onChange={handleChange} placeholder="Amount" type="number" min="0" className="border p-2 rounded" />
-                        <select name="status" value={form.status} onChange={handleChange} className="border p-2 rounded">
-                            <option>Available</option>
-                            <option>Locked</option>
-                            <option>Not Available</option>
-                        </select>
+                        <Dropdown
+                            label={null}
+                            name="status"
+                            value={form.status}
+                            onChange={handleChange}
+                            options={[
+                                { value: 'Available', label: 'Available' },
+                                { value: 'Locked', label: 'Locked' },
+                                { value: 'Not Available', label: 'Not Available' },
+                            ]}
+                            placeholder="Status"
+                            className=""
+                            required
+                        />
                         <input name="interestRate" value={form.interestRate} onChange={handleChange} placeholder="Interest Rate (%)" type="number" min="0" step="0.01" className="border p-2 rounded" />
                         <input name="transferTime" value={form.transferTime} onChange={handleChange} placeholder="Transfer Wait Time (label)" className="border p-2 rounded" />
                         <input name="category" value={form.category} onChange={handleChange} placeholder="Category" className="border p-2 rounded" />

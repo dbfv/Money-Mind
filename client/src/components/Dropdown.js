@@ -69,7 +69,7 @@ const Dropdown = ({
                 <button
                     type="button"
                     ref={buttonRef}
-                    className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white cursor-pointer hover:border-gray-400 focus:shadow-lg flex justify-between items-center ${error ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white cursor-pointer flex justify-between items-center ${error ? '' : ''}`}
                     aria-haspopup="listbox"
                     aria-expanded={open}
                     onClick={() => setOpen((o) => !o)}
@@ -77,15 +77,12 @@ const Dropdown = ({
                     <span className={selected ? 'text-gray-900' : 'text-gray-400'}>
                         {selected ? selected.label ?? selected.name ?? selected : placeholder}
                     </span>
-                    <svg className={`w-4 h-4 ml-2 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
                 </button>
                 <AnimatePresence>
                     {open && (
                         <motion.ul
                             ref={listRef}
-                            className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none"
+                            className="absolute right-0 z-10 mt-2 w-full min-w-[10rem] bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto focus:outline-none"
                             initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -8 }}

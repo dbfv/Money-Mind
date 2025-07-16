@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import Dropdown from '../Dropdown';
 
 const NavigationBar = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const navItems = [
@@ -15,6 +17,25 @@ const NavigationBar = () => {
 
     const isActive = (path) => {
         return location.pathname === path;
+    };
+
+    const profileOptions = [
+        { value: 'profile', label: <span><span className="mr-2">👤</span>My Profile</span> },
+        { value: 'settings', label: <span><span className="mr-2">⚙️</span>Settings</span> },
+        { value: 'signout', label: <span className="text-red-600"><span className="mr-2">🚪</span>Sign Out</span> },
+    ];
+
+    const handleProfileChange = (e) => {
+        const value = e.target.value;
+        if (value === 'profile') {
+            navigate('/profile');
+        } else if (value === 'settings') {
+            navigate('/settings');
+        } else if (value === 'signout') {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
     };
 
     const containerVariants = {
@@ -90,59 +111,20 @@ const NavigationBar = () => {
                         </motion.button>
 
                         {/* Profile Dropdown */}
-                        <div className="relative">
-                            <motion.button
-                                className="flex items-center space-x-2 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                            >
-                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                                    👤
-                                </div>
-                                <span className="hidden sm:block text-sm font-medium">Profile</span>
-                                <span className="text-xs">▼</span>
-                            </motion.button>
-
-                            {/* Dropdown Menu */}
-                            {isProfileOpen && (
-                                <motion.div
-                                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                >
-                                    <Link
-                                        to="/profile"
-                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                                        onClick={() => setIsProfileOpen(false)}
-                                    >
-                                        <span className="mr-2">👤</span>
-                                        My Profile
-                                    </Link>
-                                    <Link
-                                        to="/settings"
-                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                                        onClick={() => setIsProfileOpen(false)}
-                                    >
-                                        <span className="mr-2">⚙️</span>
-                                        Settings
-                                    </Link>
-                                    <hr className="my-2" />
-                                    <button
-                                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
-                                        onClick={() => {
-                                            localStorage.removeItem('token');
-                                            localStorage.removeItem('user');
-                                            window.location.href = '/login';
-                                            setIsProfileOpen(false);
-                                        }}
-                                    >
-                                        <span className="mr-2">🚪</span>
-                                        Sign Out
-                                    </button>
-                                </motion.div>
-                            )}
+                        <div>
+                            <Dropdown
+                                label={null}
+                                name="profileDropdown"
+                                value={''}
+                                onChange={handleProfileChange}
+                                options={profileOptions}
+                                placeholder={
+                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-lg font-medium">
+                                        👤
+                                    </div>
+                                }
+                                className=""
+                            />
                         </div>
                     </div>
                 </div>

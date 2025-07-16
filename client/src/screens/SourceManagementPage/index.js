@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Dropdown from '../../components/Dropdown';
+import { useNavigate } from 'react-router-dom';
 
 const SourceManagementPage = () => {
     const [sources, setSources] = useState([]);
@@ -17,14 +18,29 @@ const SourceManagementPage = () => {
     });
     const [editingId, setEditingId] = useState(null);
 
+    const navigate = useNavigate();
     const token = localStorage.getItem('token');
 
+    // Redirect to login if not authenticated
+    useEffect(() => {
+        if (!token) {
+            setError('You must be logged in to manage sources. Redirecting to login...');
+            setTimeout(() => navigate('/login'), 1500);
+        }
+    }, [token, navigate]);
+
     const fetchSources = async () => {
+        if (!token) return;
         setIsLoading(true);
         try {
             const res = await fetch('http://localhost:5000/api/sources', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+            if (res.status === 401) {
+                setError('Session expired or unauthorized. Please log in again.');
+                setTimeout(() => navigate('/login'), 1500);
+                return;
+            }
             if (!res.ok) throw new Error('Failed to fetch sources');
             const data = await res.json();
             setSources(data);
@@ -35,7 +51,7 @@ const SourceManagementPage = () => {
         }
     };
 
-    useEffect(() => { fetchSources(); }, []);
+    useEffect(() => { fetchSources(); }, [token]);
 
     const handleChange = e => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -43,6 +59,10 @@ const SourceManagementPage = () => {
 
     const handleSubmit = async e => {
         e.preventDefault();
+        if (!token) {
+            setError('You must be logged in to perform this action.');
+            return;
+        }
         try {
             const method = editingId ? 'PUT' : 'POST';
             const url = editingId ? `http://localhost:5000/api/sources/${editingId}` : 'http://localhost:5000/api/sources';
@@ -54,6 +74,11 @@ const SourceManagementPage = () => {
                 },
                 body: JSON.stringify(form)
             });
+            if (res.status === 401) {
+                setError('Session expired or unauthorized. Please log in again.');
+                setTimeout(() => navigate('/login'), 1500);
+                return;
+            }
             if (!res.ok) throw new Error('Failed to save source');
             setForm({ name: '', type: 'Bank Account', balance: '', status: 'Available', interestRate: '', interestPeriod: 'Yearly', transferTime: '', category: '' });
             setEditingId(null);
@@ -78,13 +103,27 @@ const SourceManagementPage = () => {
     };
 
     const handleDelete = async id => {
-        if (!window.confirm('Delete this source?')) return;
+        if (!token) {
+            setError('You must be logged in to perform this action.');
+            return;
+        }
+        if (!window.confirm('Are you sure you want to delete this source?')) return;
         try {
             const res = await fetch(`http://localhost:5000/api/sources/${id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
-            if (!res.ok) throw new Error('Failed to delete source');
+            if (res.status === 401) {
+                setError('Session expired or unauthorized. Please log in again.');
+                setTimeout(() => navigate('/login'), 1500);
+                return;
+            }
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.message || 'Failed to delete source');
+            }
             fetchSources();
         } catch (e) {
             setError(e.message);

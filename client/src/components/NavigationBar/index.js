@@ -32,6 +32,7 @@ const NavigationBar = () => {
         } else if (value === 'settings') {
             navigate('/settings');
         } else if (value === 'signout') {
+            // Logout logic: remove JWT and user info, redirect to login
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = '/login';
@@ -124,6 +125,7 @@ const NavigationBar = () => {
                                     </div>
                                 }
                                 className=""
+                                borderless={true}
                             />
                         </div>
                     </div>

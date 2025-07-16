@@ -11,6 +11,7 @@ const SourceManagementPage = () => {
         balance: '',
         status: 'Available',
         interestRate: '',
+        interestPeriod: 'Yearly',
         transferTime: '',
         category: '',
     });
@@ -54,7 +55,7 @@ const SourceManagementPage = () => {
                 body: JSON.stringify(form)
             });
             if (!res.ok) throw new Error('Failed to save source');
-            setForm({ name: '', type: 'Bank Account', balance: '', status: 'Available', interestRate: '', transferTime: '', category: '' });
+            setForm({ name: '', type: 'Bank Account', balance: '', status: 'Available', interestRate: '', interestPeriod: 'Yearly', transferTime: '', category: '' });
             setEditingId(null);
             fetchSources();
         } catch (e) {
@@ -69,6 +70,7 @@ const SourceManagementPage = () => {
             balance: src.balance,
             status: src.status,
             interestRate: src.interestRate,
+            interestPeriod: src.interestPeriod || 'Yearly',
             transferTime: src.transferTime,
             category: src.category,
         });
@@ -126,13 +128,30 @@ const SourceManagementPage = () => {
                             className=""
                             required
                         />
-                        <input name="interestRate" value={form.interestRate} onChange={handleChange} placeholder="Interest Rate (%)" type="number" min="0" step="0.01" className="border p-2 rounded" />
+                        <div className="flex gap-2">
+                            <input name="interestRate" value={form.interestRate} onChange={handleChange} placeholder="Interest Rate (%)" type="number" min="0" step="0.01" className="border p-2 rounded flex-1" />
+                            <Dropdown
+                                label={null}
+                                name="interestPeriod"
+                                value={form.interestPeriod}
+                                onChange={handleChange}
+                                options={[
+                                    { value: 'Daily', label: 'Daily' },
+                                    { value: 'Weekly', label: 'Weekly' },
+                                    { value: 'Monthly', label: 'Monthly' },
+                                    { value: 'Yearly', label: 'Yearly' },
+                                ]}
+                                placeholder="Period"
+                                className="w-28"
+                                required
+                            />
+                        </div>
                         <input name="transferTime" value={form.transferTime} onChange={handleChange} placeholder="Transfer Wait Time (label)" className="border p-2 rounded" />
                         <input name="category" value={form.category} onChange={handleChange} placeholder="Category" className="border p-2 rounded" />
                     </div>
                     <div className="flex gap-2 mt-2">
                         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">{editingId ? 'Update' : 'Add'} Source</button>
-                        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm({ name: '', type: 'Bank Account', balance: '', status: 'Available', interestRate: '', transferTime: '', category: '' }); }} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>}
+                        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm({ name: '', type: 'Bank Account', balance: '', status: 'Available', interestRate: '', interestPeriod: 'Yearly', transferTime: '', category: '' }); }} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>}
                     </div>
                 </form>
                 {isLoading ? <div>Loading...</div> : error ? <div className="text-red-600">{error}</div> : (
@@ -156,7 +175,7 @@ const SourceManagementPage = () => {
                                     <td className="p-2">{src.type}</td>
                                     <td className="p-2">${src.balance}</td>
                                     <td className="p-2">{src.status}</td>
-                                    <td className="p-2">{src.interestRate}%</td>
+                                    <td className="p-2">{src.interestRate}% {src.interestPeriod ? `(${src.interestPeriod})` : ''}</td>
                                     <td className="p-2">{src.transferTime}</td>
                                     <td className="p-2">{src.category}</td>
                                     <td className="p-2 flex gap-2">

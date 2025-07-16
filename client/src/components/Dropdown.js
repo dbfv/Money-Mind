@@ -11,6 +11,7 @@ const Dropdown = ({
     placeholder = 'Select an option',
     className = '',
     required = false,
+    borderless = false,
 }) => {
     const [open, setOpen] = useState(false);
     const buttonRef = useRef(null);
@@ -69,7 +70,8 @@ const Dropdown = ({
                 <button
                     type="button"
                     ref={buttonRef}
-                    className={`w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white cursor-pointer flex justify-between items-center ${error ? '' : ''}`}
+                    className={`w-full px-3 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white cursor-pointer flex justify-between items-center ${borderless ? '' : `${error ? 'border-red-500 border' : 'border border-gray-300'} hover:border-gray-400 focus:shadow-lg`
+                        }`}
                     aria-haspopup="listbox"
                     aria-expanded={open}
                     onClick={() => setOpen((o) => !o)}

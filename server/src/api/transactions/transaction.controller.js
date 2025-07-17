@@ -66,7 +66,7 @@ exports.createTransaction = async (req, res) => {
 exports.getTransactions = async (req, res) => {
   try {
     const transactions = await Transaction.find({ userId: req.user.id })
-      //.populate('category')
+      .populate('category')
       .populate('source');
     res.json(transactions);
   } catch (error) {

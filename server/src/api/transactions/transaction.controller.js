@@ -1,5 +1,6 @@
 const Transaction = require('./transaction.model');
 const Source = require('../sources/source.model');
+const Type = require('../types/type.model');
 const mongoose = require('mongoose');
 
 // @desc    Create a transaction
@@ -10,6 +11,16 @@ exports.createTransaction = async (req, res) => {
   session.startTransaction();
   try {
     const { amount, type, date, description, category, source } = req.body;
+
+    // Validate category ObjectId (this is actually the type field in the form)
+    if (!mongoose.Types.ObjectId.isValid(category)) {
+      throw new Error('Invalid type ID');
+    }
+    // Check if type exists
+    const typeDoc = await Type.findById(category);
+    if (!typeDoc) {
+      throw new Error('Type not found');
+    }
 
     // 1. Create the transaction
     const transaction = new Transaction({
@@ -54,7 +65,9 @@ exports.createTransaction = async (req, res) => {
 // @access  Private
 exports.getTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.find({ userId: req.user.id }).populate('category').populate('source');
+    const transactions = await Transaction.find({ userId: req.user.id })
+      //.populate('category')
+      .populate('source');
     res.json(transactions);
   } catch (error) {
     console.error('Dashboard error:', error); // Debug log
@@ -79,7 +92,9 @@ exports.getDashboardStats = async (req, res) => {
     const monthlyTransactions = await Transaction.find({
       userId,
       date: { $gte: startOfMonth, $lte: endOfMonth }
-    }).populate('category').populate('source');
+    })
+      //.populate('category')
+      .populate('source');
 
     // Calculate financial summary
     const income = monthlyTransactions

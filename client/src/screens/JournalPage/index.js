@@ -18,6 +18,7 @@ const JournalPage = () => {
     });
     const [errors, setErrors] = useState({});
     const [sources, setSources] = useState([]);
+    const [categories, setCategories] = useState([]);
 
     // Check URL for showForm parameter
     useEffect(() => {
@@ -28,17 +29,6 @@ const JournalPage = () => {
     }, [location]);
 
     // Mock categories and sources - in real app, these would come from API
-    const categories = [
-        { _id: '1', name: 'Housing' },
-        { _id: '2', name: 'Food' },
-        { _id: '3', name: 'Transport' },
-        { _id: '4', name: 'Entertainment' },
-        { _id: '5', name: 'Utilities' },
-        { _id: '6', name: 'Healthcare' },
-        { _id: '7', name: 'Shopping' },
-        { _id: '8', name: 'Other' }
-    ];
-
     useEffect(() => {
         // Fetch real sources from backend
         const fetchSources = async () => {
@@ -55,6 +45,24 @@ const JournalPage = () => {
             }
         };
         fetchSources();
+    }, []);
+
+    useEffect(() => {
+        // Fetch real types from backend
+        const fetchTypes = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('http://localhost:5000/api/types', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error('Failed to fetch types');
+                const data = await res.json();
+                setCategories(data);
+            } catch (e) {
+                setCategories([]);
+            }
+        };
+        fetchTypes();
     }, []);
 
     const handleInputChange = (e) => {
@@ -195,6 +203,14 @@ const JournalPage = () => {
                         >
                             Manage Sources
                         </motion.button>
+                        <motion.button
+                            className="mt-4 md:mt-0 ml-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-xl font-semibold shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate('/types')}
+                        >
+                            Manage Types
+                        </motion.button>
                     </motion.div>
 
                     {/* Journal Content */}
@@ -228,7 +244,7 @@ const JournalPage = () => {
                         onClick={closeForm}
                     >
                         <motion.div
-                            className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+                            className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto hide-scrollbar"
                             variants={formVariants}
                             initial="hidden"
                             animate="visible"
@@ -271,15 +287,12 @@ const JournalPage = () => {
                                     {/* Type */}
                                     <Dropdown
                                         label="Type"
-                                        name="type"
-                                        value={formData.type}
+                                        name="category"
+                                        value={formData.category}
                                         onChange={handleInputChange}
-                                        options={[
-                                            { value: 'expense', label: 'Expense' },
-                                            { value: 'income', label: 'Income' }
-                                        ]}
-                                        error={errors.type}
-                                        placeholder="Select type"
+                                        options={categories.map(c => ({ value: c._id, label: c.name }))}
+                                        error={errors.category}
+                                        placeholder="Select a type"
                                         required
                                     />
 

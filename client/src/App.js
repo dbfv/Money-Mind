@@ -7,10 +7,8 @@ import DashboardPage from './screens/DashboardPage';
 import JournalPage from './screens/JournalPage';
 import CalendarPage from './screens/CalendarPage';
 import InvestmentPage from './screens/InvestmentPage';
-import CategoryManagementPage from './screens/CategoryManagementPage';
 import NavigationBar from './components/NavigationBar';
 import SourceManagementPage from './screens/SourceManagementPage';
-// import TypeManagementPage from './screens/TypeManagementPage';
 
 // PrivateRoute component
 function PrivateRoute({ children }) {
@@ -33,11 +31,9 @@ function AppContent() {
                 <Route path="/journal" element={<PrivateRoute><JournalPage /></PrivateRoute>} />
                 <Route path="/calendar" element={<PrivateRoute><CalendarPage /></PrivateRoute>} />
                 <Route path="/investments" element={<PrivateRoute><InvestmentPage /></PrivateRoute>} />
-                <Route path="/categories" element={<PrivateRoute><CategoryManagementPage /></PrivateRoute>} />
                 <Route path="/profile" element={<PrivateRoute><div className="pt-16 p-8">Profile Page (Coming Soon)</div></PrivateRoute>} />
                 <Route path="/settings" element={<PrivateRoute><div className="pt-16 p-8">Settings Page (Coming Soon)</div></PrivateRoute>} />
                 <Route path="/sources" element={<PrivateRoute><SourceManagementPage /></PrivateRoute>} />
-                {/* <Route path="/types" element={<PrivateRoute><TypeManagementPage /></PrivateRoute>} /> */}
             </Routes>
         </>
     );

@@ -6,7 +6,11 @@ const transactionRoutes = (app) => {
         .post(auth, transactionController.createTransaction)
         .get(auth, transactionController.getTransactions);
 
+    // Place this above the /:id route!
     app.get('/api/transactions/dashboard', auth, transactionController.getDashboardStats);
+
+    app.route('/api/transactions/:id')
+        .get(auth, transactionController.getTransactionById);
 };
 
 module.exports = transactionRoutes;

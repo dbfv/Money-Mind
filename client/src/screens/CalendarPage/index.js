@@ -32,7 +32,6 @@ const CalendarPage = () => {
         { value: 'expense', label: 'Expense' },
         { value: 'income', label: 'Income' },
         { value: 'reminder', label: 'Reminder' },
-        { value: 'prediction', label: 'Prediction' }
     ];
     
     const frequencyOptions = [

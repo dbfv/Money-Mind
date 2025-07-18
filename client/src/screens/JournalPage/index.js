@@ -10,7 +10,6 @@ const JournalPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         amount: '',
-        type: 'expense',
         date: new Date().toISOString().split('T')[0],
         description: '',
         category: '',
@@ -135,7 +134,7 @@ const JournalPage = () => {
                 },
                 body: JSON.stringify({
                     amount: parseFloat(formData.amount),
-                    type: formData.type,
+                    type: categories.find(c => c._id === formData.category)?.type || 'expense',
                     date: new Date(formData.date),
                     description: formData.description,
                     category: formData.category,
@@ -147,7 +146,6 @@ const JournalPage = () => {
                 // Reset form and close
                 setFormData({
                     amount: '',
-                    type: 'expense',
                     date: new Date().toISOString().split('T')[0],
                     description: '',
                     category: '',
@@ -360,15 +358,18 @@ const JournalPage = () => {
                                             )}
                                         </div>
 
-                                        {/* Type */}
+                                        {/* Category */}
                                         <Dropdown
-                                            label="Type"
+                                            label="Category"
                                             name="category"
                                             value={formData.category}
                                             onChange={handleInputChange}
-                                            options={categories.map(c => ({ value: c._id, label: c.name }))}
+                                            options={categories.map(c => ({
+                                                value: c._id,
+                                                label: `${c.name} (${c.type === 'expense' ? '💸' : '💰'})`
+                                            }))}
                                             error={errors.category}
-                                            placeholder="Select a type"
+                                            placeholder="Select a category"
                                             required
                                         />
 
@@ -404,18 +405,6 @@ const JournalPage = () => {
                                                 <p className="text-red-500 text-sm mt-1">{errors.description}</p>
                                             )}
                                         </div>
-
-                                        {/* Category */}
-                                        <Dropdown
-                                            label="Category"
-                                            name="category"
-                                            value={formData.category}
-                                            onChange={handleInputChange}
-                                            options={categories.map(c => ({ value: c._id, label: c.name }))}
-                                            error={errors.category}
-                                            placeholder="Select a category"
-                                            required
-                                        />
 
                                         {/* Source */}
                                         <Dropdown

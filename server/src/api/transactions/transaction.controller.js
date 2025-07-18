@@ -205,24 +205,3 @@ exports.getDashboardStats = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-// @desc    Get a transaction by ID
-// @route   GET /api/transactions/:id
-// @access  Private
-exports.getTransactionById = async (req, res) => {
-  try {
-    const transaction = await Transaction.findOne({
-      _id: req.params.id,
-      userId: req.user.id
-    }).populate('category').populate('source');
-
-    if (!transaction) {
-      return res.status(404).json({ message: 'Transaction not found' });
-    }
-
-    res.json(transaction);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Iridescence from '../../components/Iridescence';
+import GradientButton from '../../components/GradientButton';
 
 const LandingPage = () => {
     const containerVariants = {
@@ -122,22 +123,22 @@ const LandingPage = () => {
 
                 {/* CTA Section */}
                 <motion.div className="space-y-4 md:space-y-0 md:space-x-6 flex flex-col md:flex-row justify-center items-center" variants={itemVariants}>
-                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                        <Link
-                            to="/register"
-                            className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+                    <Link to="/register">
+                        <GradientButton 
+                            size="large" 
+                            variant="primary"
                         >
                             Start Your Journey
-                        </Link>
-                    </motion.div>
-                    <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                        <Link
-                            to="/login"
-                            className="inline-block bg-white/90 backdrop-blur-sm text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg shadow-lg border border-gray-200 hover:bg-white transition-all duration-300"
+                        </GradientButton>
+                    </Link>
+                    <Link to="/login">
+                        <GradientButton 
+                            size="large" 
+                            variant="secondary"
                         >
                             Sign In
-                        </Link>
-                    </motion.div>
+                        </GradientButton>
+                    </Link>
                 </motion.div>
 
                 {/* Trust Indicators */}

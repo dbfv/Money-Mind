@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import GradientButton from '../../components/GradientButton';
 
 const DashboardPage = () => {
     const [isAIOpen, setIsAIOpen] = useState(false);
@@ -152,16 +153,12 @@ const DashboardPage = () => {
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
                             <p className="text-gray-600">Welcome back! Here's your financial overview.</p>
                         </div>
-                        <motion.button
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center"
-                            variants={buttonVariants}
-                            whileHover="hover"
-                            whileTap="tap"
+                        <GradientButton
                             onClick={() => navigate('/journal?showForm=true')}
+                            icon="➕"
                         >
-                            <span className="mr-2">➕</span>
                             Add Transaction
-                        </motion.button>
+                        </GradientButton>
                     </motion.div>
 
                     {/* Financial Summary Cards */}
@@ -308,15 +305,12 @@ const DashboardPage = () => {
                                 <div className="text-6xl mb-4">📊</div>
                                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No Data Available</h3>
                                 <p className="text-gray-600 mb-6">Start adding transactions to see your financial insights here.</p>
-                                <motion.button
-                                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
+                                <GradientButton
                                     onClick={() => navigate('/journal?showForm=true')}
+                                    icon="➕"
                                 >
-                                    <span className="mr-2">➕</span>
                                     Add Your First Transaction
-                                </motion.button>
+                                </GradientButton>
                             </div>
                         </motion.div>
                     )}
@@ -332,14 +326,16 @@ const DashboardPage = () => {
                 animate={{ scale: 1 }}
                 transition={{ delay: 1, type: "spring", stiffness: 200 }}
             >
-                <motion.button
-                    className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg flex items-center justify-center text-white text-2xl"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                <GradientButton
+                    className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl"
                     onClick={() => setIsAIOpen(!isAIOpen)}
+                    motionProps={{
+                        whileHover: { scale: 1.1 },
+                        whileTap: { scale: 0.9 }
+                    }}
                 >
                     🤖
-                </motion.button>
+                </GradientButton>
 
                 {/* AI Chat Window */}
                 {isAIOpen && (

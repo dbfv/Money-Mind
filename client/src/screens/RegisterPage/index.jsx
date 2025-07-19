@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import GradientButton from "../../components/GradientButton";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -371,29 +373,21 @@ const RegisterPage = () => {
           </motion.div>
 
           {/* Submit Button */}
-          <motion.div variants={itemVariants}>
-            <motion.button
-              type="submit"
-              disabled={isSubmitting}
-              variants={buttonVariants}
-              whileHover="hover"
-              whileTap="tap"
-              className={`w-full py-3 px-6 rounded-lg font-medium text-white transition-all duration-200 ${
-                isSubmitting
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              }`}
-            >
-              {isSubmitting ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Creating Account...
-                </div>
-              ) : (
-                "Create Account"
-              )}
-            </motion.button>
-          </motion.div>
+          <GradientButton
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full"
+            motionProps={{ variants: buttonVariants, whileHover: "hover", whileTap: "tap" }}
+          >
+            {isSubmitting ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Creating Account...
+              </div>
+            ) : (
+              "Create Account"
+            )}
+          </GradientButton>
         </form>
 
         <motion.div className="text-center mt-6" variants={itemVariants}>

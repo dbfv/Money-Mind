@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Dropdown from '../../components/Dropdown';
+import GradientButton from '../../components/GradientButton';
 
 // Simple chart component for allocation
 const DonutChart = ({ data }) => {
@@ -480,16 +481,10 @@ const InvestmentPage = () => {
                                     </div>
 
                                     <div className="pt-4">
-                                        <motion.button
+                                        <GradientButton
                                             type="submit"
                                             disabled={isLoading}
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            className={`w-full py-3 px-6 rounded-lg font-medium text-white transition-all duration-300 ${
-                                                isLoading
-                                                    ? 'bg-gray-400 cursor-not-allowed'
-                                                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg'
-                                            }`}
+                                            className="w-full"
                                         >
                                             {isLoading ? (
                                                 <div className="flex items-center justify-center">
@@ -499,7 +494,7 @@ const InvestmentPage = () => {
                                             ) : (
                                                 'Get My Recommendation'
                                             )}
-                                        </motion.button>
+                                        </GradientButton>
                                     </div>
                                 </form>
                             </motion.div>
@@ -546,14 +541,13 @@ const InvestmentPage = () => {
                                     <p className="text-gray-700 mb-6">{recommendation.explanation}</p>
                                     
                                     <div className="flex justify-end">
-                                        <motion.button
+                                        <GradientButton
                                             onClick={() => setStep(1)}
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            className="px-4 py-2 text-blue-600 hover:text-blue-800 font-medium"
+                                            variant="secondary"
+                                            size="small"
                                         >
                                             Adjust My Profile
-                                        </motion.button>
+                                        </GradientButton>
                                     </div>
                                 </div>
                             </motion.div>

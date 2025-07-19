@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Dropdown from '../../components/Dropdown';
+import GradientButton from '../../components/GradientButton';
 
 const JournalPage = () => {
     const location = useLocation();
@@ -230,15 +231,12 @@ const JournalPage = () => {
                             <motion.div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200" variants={itemVariants}>
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                                     <div className="text-2xl font-semibold text-gray-900 mb-4 md:mb-0">Transaction Journal</div>
-                                    <motion.button
-                                        className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-                                        whileHover={{ scale: 1.07 }}
-                                        whileTap={{ scale: 0.97 }}
+                                    <GradientButton
                                         onClick={() => setShowForm(true)}
+                                        icon="➕"
                                     >
-                                        <span className="text-xl">➕</span>
-                                        <span>Add Transaction</span>
-                                    </motion.button>
+                                        Add Transaction
+                                    </GradientButton>
                                 </div>
                                 {/* Transactions List */}
                                 <div className="mt-8 overflow-x-auto">
@@ -447,25 +445,13 @@ const JournalPage = () => {
                                             >
                                                 Cancel
                                             </motion.button>
-                                            <motion.button
+                                            <GradientButton
                                                 type="submit"
                                                 disabled={isSubmitting}
-                                                className={`flex-1 px-4 py-2 rounded-lg font-medium text-white transition-all duration-200 ${isSubmitting
-                                                    ? 'bg-gray-400 cursor-not-allowed'
-                                                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
-                                                    }`}
-                                                whileTap={{ scale: 0.95 }}
-                                                transition={{ duration: 0.1 }}
+                                                className={isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}
                                             >
-                                                {isSubmitting ? (
-                                                    <div className="flex items-center justify-center">
-                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                                        Creating...
-                                                    </div>
-                                                ) : (
-                                                    'Create Transaction'
-                                                )}
-                                            </motion.button>
+                                                {isSubmitting ? 'Saving...' : 'Save Transaction'}
+                                            </GradientButton>
                                         </div>
                                     </form>
                                 </div>

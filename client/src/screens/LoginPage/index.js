@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import BackgroundWithCards from '../../components/BackgroundWithCards';
+import GradientButton from '../../components/GradientButton';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -206,28 +207,21 @@ const LoginPage = () => {
                         </motion.div>
 
                         {/* Submit Button */}
-                        <motion.div variants={itemVariants}>
-                            <motion.button
-                                type="submit"
-                                disabled={isSubmitting}
-                                variants={buttonVariants}
-                                whileHover="hover"
-                                whileTap="tap"
-                                className={`w-full py-3 px-6 rounded-lg font-medium text-white transition-all duration-200 ${isSubmitting
-                                    ? 'bg-gray-400 cursor-not-allowed'
-                                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
-                                    }`}
-                            >
-                                {isSubmitting ? (
-                                    <div className="flex items-center justify-center">
-                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                        Signing In...
-                                    </div>
-                                ) : (
-                                    'Sign In'
-                                )}
-                            </motion.button>
-                        </motion.div>
+                        <GradientButton
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full"
+                            motionProps={{ variants: buttonVariants, whileHover: "hover", whileTap: "tap" }}
+                        >
+                            {isSubmitting ? (
+                                <div className="flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                    Signing In...
+                                </div>
+                            ) : (
+                                'Sign In'
+                            )}
+                        </GradientButton>
                     </form>
 
                     <motion.div

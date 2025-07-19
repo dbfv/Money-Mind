@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Dropdown from '../../components/Dropdown';
 import { useNavigate } from 'react-router-dom';
+import GradientButton from '../../components/GradientButton';
 
 const SourceManagementPage = () => {
     const [sources, setSources] = useState([]);
@@ -189,8 +190,29 @@ const SourceManagementPage = () => {
                         <input name="category" value={form.category} onChange={handleChange} placeholder="Category" className="border p-2 rounded" />
                     </div>
                     <div className="flex gap-2 mt-2">
-                        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">{editingId ? 'Update' : 'Add'} Source</button>
-                        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm({ name: '', type: 'Bank Account', balance: '', status: 'Available', interestRate: '', interestPeriod: 'Yearly', transferTime: '', category: '' }); }} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>}
+                        <GradientButton type="submit">
+                            {editingId ? 'Update' : 'Add'} Source
+                        </GradientButton>
+                        {editingId && (
+                            <GradientButton 
+                                variant="secondary" 
+                                onClick={() => { 
+                                    setEditingId(null); 
+                                    setForm({ 
+                                        name: '', 
+                                        type: 'Bank Account', 
+                                        balance: '', 
+                                        status: 'Available', 
+                                        interestRate: '', 
+                                        interestPeriod: 'Yearly', 
+                                        transferTime: '', 
+                                        category: '' 
+                                    }); 
+                                }}
+                            >
+                                Cancel
+                            </GradientButton>
+                        )}
                     </div>
                 </form>
                 {isLoading ? <div>Loading...</div> : error ? <div className="text-red-600">{error}</div> : (
@@ -218,8 +240,20 @@ const SourceManagementPage = () => {
                                     <td className="p-2">{src.transferTime}</td>
                                     <td className="p-2">{src.category}</td>
                                     <td className="p-2 flex gap-2">
-                                        <button onClick={() => handleEdit(src)} className="text-blue-600 hover:underline">Edit</button>
-                                        <button onClick={() => handleDelete(src._id)} className="text-red-600 hover:underline">Delete</button>
+                                        <GradientButton 
+                                            onClick={() => handleEdit(src)} 
+                                            size="small"
+                                            variant="secondary"
+                                        >
+                                            Edit
+                                        </GradientButton>
+                                        <GradientButton 
+                                            onClick={() => handleDelete(src._id)} 
+                                            size="small" 
+                                            variant="danger"
+                                        >
+                                            Delete
+                                        </GradientButton>
                                     </td>
                                 </tr>
                             ))}

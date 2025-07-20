@@ -21,6 +21,8 @@ const JournalPage = () => {
     const [transactions, setTransactions] = useState([]);
     const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
     const [transactionsError, setTransactionsError] = useState(null);
+    const [showCategoryForm, setShowCategoryForm] = useState(false);
+    const [categoryFormError, setCategoryFormError] = useState(null);
 
     // Check URL for showForm parameter
     useEffect(() => {
@@ -50,14 +52,14 @@ const JournalPage = () => {
     }, []);
 
     useEffect(() => {
-        // Fetch real types from backend
+        // Fetch real categories from backend
         const fetchCategories = async () => {
             try {
                 const token = localStorage.getItem('token');
                 const res = await fetch('http://localhost:5000/api/types', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!res.ok) throw new Error('Failed to fetch types');
+                if (!res.ok) throw new Error('Failed to fetch categories');
                 const data = await res.json();
                 setCategories(data);
             } catch (e) {
@@ -172,6 +174,11 @@ const JournalPage = () => {
         navigate('/journal');
     };
 
+    const handleCategoryAdded = (newCategory) => {
+        setCategories(prev => [...prev, newCategory]);
+        setShowCategoryForm(false);
+    };
+
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
@@ -228,15 +235,26 @@ const JournalPage = () => {
                             <motion.div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200" variants={itemVariants}>
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                                     <div className="text-2xl font-semibold text-gray-900 mb-4 md:mb-0">Transaction Journal</div>
-                                    <motion.button
-                                        className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-                                        whileHover={{ scale: 1.07 }}
-                                        whileTap={{ scale: 0.97 }}
-                                        onClick={() => setShowForm(true)}
-                                    >
-                                        <span className="text-xl">➕</span>
-                                        <span>Add Transaction</span>
-                                    </motion.button>
+                                    <div className="flex flex-col md:flex-row gap-3">
+                                        <motion.button
+                                            className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => navigate('/manage')}
+                                        >
+                                            <span className="text-xl">⚙️</span>
+                                            <span>Manage</span>
+                                        </motion.button>
+                                        <motion.button
+                                            className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => setShowForm(true)}
+                                        >
+                                            <span className="text-xl">➕</span>
+                                            <span>Add Transaction</span>
+                                        </motion.button>
+                                    </div>
                                 </div>
                                 {/* Transactions List */}
                                 <div className="mt-8 overflow-x-auto">
@@ -307,7 +325,166 @@ const JournalPage = () => {
                         </div>
                     </div>
                 </div>
-                {/* Transaction Form Overlay (unchanged) */}
+                {/* Category Form Modal */}
+                <AnimatePresence>
+                    {showCategoryForm && (
+                        <motion.div
+                            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowCategoryForm(false)}
+                        >
+                            <motion.div
+                                className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto hide-scrollbar"
+                                variants={formVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="exit"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="p-6">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h2 className="text-2xl font-bold text-gray-900">Manage Categories</h2>
+                                        <button
+                                            onClick={() => setShowCategoryForm(false)}
+                                            className="text-gray-500 hover:text-gray-700 text-xl"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+
+                                    <form onSubmit={async (e) => {
+                                        e.preventDefault();
+                                        const formData = new FormData(e.target);
+                                        const categoryData = {
+                                            name: formData.get('name'),
+                                            type: formData.get('type')
+                                        };
+
+                                        try {
+                                            setCategoryFormError(null);
+                                            const res = await fetch('http://localhost:5000/api/types', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                                },
+                                                body: JSON.stringify(categoryData)
+                                            });
+
+                                            if (!res.ok) {
+                                                const errorData = await res.json();
+                                                throw new Error(errorData.message || 'Failed to create category');
+                                            }
+
+                                            const newCategory = await res.json();
+                                            setCategories(prev => [...prev, newCategory]);
+                                            e.target.reset();
+                                            setCategoryFormError(null);
+                                        } catch (error) {
+                                            setCategoryFormError(error.message);
+                                            console.error('Error creating category:', error);
+                                        }
+                                    }} className="space-y-4">
+                                        {categoryFormError && (
+                                            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                                                {categoryFormError}
+                                            </div>
+                                        )}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Category Name *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                required
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                                placeholder="Enter category name"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Type *
+                                            </label>
+                                            <select
+                                                name="type"
+                                                required
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                            >
+                                                <option value="expense">Expense 💸</option>
+                                                <option value="income">Income 💰</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="mt-6">
+                                            <button
+                                                type="submit"
+                                                className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-colors"
+                                            >
+                                                Add Category
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    {/* Existing Categories List */}
+                                    <div className="mt-8">
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Existing Categories</h3>
+                                        <div className="max-h-60 overflow-y-auto">
+                                            <table className="min-w-full divide-y divide-gray-200">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {categories.map(category => (
+                                                        <tr key={category._id} className="hover:bg-gray-50">
+                                                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                                                {category.name}
+                                                            </td>
+                                                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                                                                {category.type === 'expense' ? '💸' : '💰'}
+                                                            </td>
+                                                            <td className="px-3 py-2 whitespace-nowrap text-right text-sm">
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        if (!window.confirm('Are you sure you want to delete this category?')) return;
+                                                                        try {
+                                                                            const res = await fetch(`http://localhost:5000/api/types/${category._id}`, {
+                                                                                method: 'DELETE',
+                                                                                headers: {
+                                                                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                                                                }
+                                                                            });
+                                                                            if (!res.ok) throw new Error('Failed to delete category');
+                                                                            setCategories(prev => prev.filter(c => c._id !== category._id));
+                                                                        } catch (error) {
+                                                                            console.error('Error deleting category:', error);
+                                                                        }
+                                                                    }}
+                                                                    className="text-red-600 hover:text-red-900"
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Existing Transaction Form Modal */}
                 <AnimatePresence>
                     {showForm && (
                         <motion.div

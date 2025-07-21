@@ -8,7 +8,6 @@ import JournalPage from './screens/JournalPage/JournalPage';
 import CalendarPage from './screens/CalendarPage/CalendarPage';
 import InvestmentPage from './screens/InvestmentPage/InvestmentPage';
 import NavigationBar from './components/NavigationBar';
-import SourceManagementPage from './screens/SourceManagementPage/SourceManagementPage';
 import ManagementPage from './screens/ManagementPage/ManagementPage';
 
 // PrivateRoute component
@@ -35,7 +34,8 @@ function AppContent() {
                 <Route path="/profile" element={<PrivateRoute><div className="pt-16 p-8">Profile Page (Coming Soon)</div></PrivateRoute>} />
                 <Route path="/settings" element={<PrivateRoute><div className="pt-16 p-8">Settings Page (Coming Soon)</div></PrivateRoute>} />
                 <Route path="/manage" element={<PrivateRoute><ManagementPage /></PrivateRoute>} />
-                <Route path="/sources" element={<PrivateRoute><SourceManagementPage /></PrivateRoute>} />
+                {/* Redirect /sources to /manage */}
+                <Route path="/sources" element={<Navigate to="/manage" replace />} />
             </Routes>
         </>
     );

@@ -22,7 +22,7 @@ const ManagementPage = () => {
     });
     const [sourceForm, setSourceForm] = useState({
         sourceName: '',
-        sourceType: 'bank',
+        sourceType: 'Bank Account',
         balance: 0,
         interestRate: 0,
         paymentFrequency: 'monthly'
@@ -167,7 +167,7 @@ const ManagementPage = () => {
             await fetchSources();
             setSourceForm({
                 sourceName: '',
-                sourceType: 'bank',
+                sourceType: 'Bank Account',
                 balance: 0,
                 interestRate: 0,
                 paymentFrequency: 'monthly'
@@ -240,7 +240,7 @@ const ManagementPage = () => {
                                 onAdd={() => {
                                     setSourceForm({
                                         sourceName: '',
-                                        sourceType: 'bank',
+                                        sourceType: 'Bank Account',
                                         balance: 0,
                                         interestRate: 0,
                                         paymentFrequency: 'monthly'

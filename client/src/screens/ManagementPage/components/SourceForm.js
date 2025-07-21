@@ -2,12 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import SourceFields from '../../../components/Forms/SourceFields';
 
-const SourceForm = ({
-    values,
-    onChange,
-    onSubmit,
-    onClose,
-    isEditing
+const SourceForm = ({ 
+    values, 
+    onChange, 
+    onSubmit, 
+    onClose, 
+    isEditing 
 }) => {
     return (
         <>

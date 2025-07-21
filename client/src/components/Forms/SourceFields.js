@@ -3,11 +3,10 @@ import Dropdown from '../Dropdown';
 
 const SourceFields = ({ values = {}, onChange }) => {
     const sourceTypeOptions = [
-        { value: 'cash', label: 'Cash 💵' },
-        { value: 'bank', label: 'Bank Account 🏦' },
-        { value: 'credit', label: 'Credit Card 💳' },
-        { value: 'investment', label: 'Investment Account 📈' },
-        { value: 'other', label: 'Other 🔄' }
+        { value: 'Bank Account', label: 'Bank Account 🏦' },
+        { value: 'E-Wallet', label: 'E-Wallet 💳' },
+        { value: 'Cash', label: 'Cash 💵' },
+        { value: 'Other', label: 'Other 🔄' }
     ];
 
     const frequencyOptions = [
@@ -46,7 +45,7 @@ const SourceFields = ({ values = {}, onChange }) => {
 
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Initial Balance
+                    Balance *
                 </label>
                 <input
                     type="number"
@@ -54,8 +53,9 @@ const SourceFields = ({ values = {}, onChange }) => {
                     value={values.balance || ''}
                     onChange={onChange}
                     step="0.01"
-                    placeholder="Enter initial balance"
+                    min="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Enter initial balance"
                 />
             </div>
 
@@ -70,9 +70,8 @@ const SourceFields = ({ values = {}, onChange }) => {
                     onChange={onChange}
                     step="0.01"
                     min="0"
-                    max="100"
-                    placeholder="Enter interest rate"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Enter interest rate"
                 />
             </div>
 

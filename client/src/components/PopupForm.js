@@ -70,8 +70,8 @@ const PopupForm = ({
                                 type="submit"
                                 disabled={isSubmitting}
                                 className={`flex-1 px-4 py-2 rounded-lg font-medium text-white transition-all duration-200 ${isSubmitting
-                                        ? 'bg-gray-400 cursor-not-allowed'
-                                        : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
                                     }`}
                                 whileTap={{ scale: 0.95 }}
                             >
@@ -92,4 +92,4 @@ const PopupForm = ({
     );
 };
 
-export default PopupForm;
+export default PopupForm; 

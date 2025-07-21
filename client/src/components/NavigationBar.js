@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Dropdown from '../Dropdown';
+import Dropdown from './Dropdown';
 
 const NavigationBar = () => {
     const location = useLocation();

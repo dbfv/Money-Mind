@@ -72,4 +72,4 @@ const SettingsDropdown = ({ onAddSource, onAddCategory }) => {
     );
 };
 
-export default SettingsDropdown;
+export default SettingsDropdown; 

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import CategoryFields from '../../components/Forms/CategoryFields';
+import SourceFields from '../../components/Forms/SourceFields';
 
 const ManagementPage = () => {
     const [activeTab, setActiveTab] = useState('categories');
@@ -10,16 +12,16 @@ const ManagementPage = () => {
     const [error, setError] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [categoryForm, setCategoryForm] = useState({
-        name: '',
-        type: 'expense',
+        categoryName: '',
+        categoryType: 'expense',
+        description: ''
     });
     const [sourceForm, setSourceForm] = useState({
-        name: '',
-        type: 'Bank Account',
+        sourceName: '',
+        sourceType: 'bank',
         balance: 0,
-        status: 'Available',
         interestRate: 0,
-        transferTime: 'Instant',
+        paymentFrequency: 'monthly'
     });
     const [editingItem, setEditingItem] = useState(null);
 
@@ -72,17 +74,17 @@ const ManagementPage = () => {
     const handleEdit = (item, type) => {
         if (type === 'category') {
             setCategoryForm({
-                name: item.name,
-                type: item.type
+                categoryName: item.name,
+                categoryType: item.type,
+                description: item.description || ''
             });
         } else {
             setSourceForm({
-                name: item.name,
-                type: item.type,
-                balance: item.balance,
-                status: item.status,
+                sourceName: item.name,
+                sourceType: item.type.toLowerCase(),
+                balance: item.balance || 0,
                 interestRate: item.interestRate || 0,
-                transferTime: item.transferTime || 'Instant',
+                paymentFrequency: item.paymentFrequency || 'monthly'
             });
         }
         setEditingItem(item);
@@ -98,13 +100,19 @@ const ManagementPage = () => {
 
             const method = editingItem ? 'PUT' : 'POST';
 
+            const categoryData = {
+                name: categoryForm.categoryName,
+                type: categoryForm.categoryType,
+                description: categoryForm.description
+            };
+
             const res = await fetch(url, {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(categoryForm)
+                body: JSON.stringify(categoryData)
             });
 
             if (!res.ok) {
@@ -113,7 +121,7 @@ const ManagementPage = () => {
             }
 
             await fetchCategories();
-            setCategoryForm({ name: '', type: 'expense' });
+            setCategoryForm({ categoryName: '', categoryType: 'expense', description: '' });
             setShowForm(false);
             setEditingItem(null);
         } catch (error) {
@@ -130,13 +138,21 @@ const ManagementPage = () => {
 
             const method = editingItem ? 'PUT' : 'POST';
 
+            const sourceData = {
+                name: sourceForm.sourceName,
+                type: sourceForm.sourceType,
+                balance: parseFloat(sourceForm.balance),
+                interestRate: parseFloat(sourceForm.interestRate),
+                paymentFrequency: sourceForm.paymentFrequency
+            };
+
             const res = await fetch(url, {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(sourceForm)
+                body: JSON.stringify(sourceData)
             });
 
             if (!res.ok) {
@@ -146,12 +162,11 @@ const ManagementPage = () => {
 
             await fetchSources();
             setSourceForm({
-                name: '',
-                type: 'Bank Account',
+                sourceName: '',
+                sourceType: 'bank',
                 balance: 0,
-                status: 'Available',
                 interestRate: 0,
-                transferTime: 'Instant',
+                paymentFrequency: 'monthly'
             });
             setShowForm(false);
             setEditingItem(null);
@@ -244,7 +259,7 @@ const ManagementPage = () => {
                                     {!showForm && (
                                         <button
                                             onClick={() => {
-                                                setCategoryForm({ name: '', type: 'expense' });
+                                                setCategoryForm({ categoryName: '', categoryType: 'expense', description: '' });
                                                 setEditingItem(null);
                                                 setShowForm(true);
                                             }}
@@ -303,12 +318,11 @@ const ManagementPage = () => {
                                         <button
                                             onClick={() => {
                                                 setSourceForm({
-                                                    name: '',
-                                                    type: 'Bank Account',
+                                                    sourceName: '',
+                                                    sourceType: 'bank',
                                                     balance: 0,
-                                                    status: 'Available',
                                                     interestRate: 0,
-                                                    transferTime: 'Instant',
+                                                    paymentFrequency: 'monthly'
                                                 });
                                                 setEditingItem(null);
                                                 setShowForm(true);
@@ -394,33 +408,10 @@ const ManagementPage = () => {
                                             </button>
                                         </div>
                                         <form onSubmit={handleCategorySubmit} className="space-y-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Category Name *
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={categoryForm.name}
-                                                    onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                                                    required
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                                    placeholder="Enter category name"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Type *
-                                                </label>
-                                                <select
-                                                    value={categoryForm.type}
-                                                    onChange={(e) => setCategoryForm({ ...categoryForm, type: e.target.value })}
-                                                    required
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                                >
-                                                    <option value="expense">Expense 💸</option>
-                                                    <option value="income">Income 💰</option>
-                                                </select>
-                                            </div>
+                                            <CategoryFields
+                                                values={categoryForm}
+                                                onChange={(e) => setCategoryForm({ ...categoryForm, [e.target.name]: e.target.value })}
+                                            />
                                             <button
                                                 type="submit"
                                                 className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
@@ -443,87 +434,10 @@ const ManagementPage = () => {
                                             </button>
                                         </div>
                                         <form onSubmit={handleSourceSubmit} className="space-y-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Source Name *
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={sourceForm.name}
-                                                    onChange={(e) => setSourceForm({ ...sourceForm, name: e.target.value })}
-                                                    required
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                    placeholder="Enter source name"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Type *
-                                                </label>
-                                                <select
-                                                    value={sourceForm.type}
-                                                    onChange={(e) => setSourceForm({ ...sourceForm, type: e.target.value })}
-                                                    required
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                >
-                                                    <option value="Bank Account">Bank Account</option>
-                                                    <option value="E-Wallet">E-Wallet</option>
-                                                    <option value="Cash">Cash</option>
-                                                    <option value="Other">Other</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Balance *
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    value={sourceForm.balance}
-                                                    onChange={(e) => setSourceForm({ ...sourceForm, balance: parseFloat(e.target.value) })}
-                                                    required
-                                                    step="0.01"
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Status *
-                                                </label>
-                                                <select
-                                                    value={sourceForm.status}
-                                                    onChange={(e) => setSourceForm({ ...sourceForm, status: e.target.value })}
-                                                    required
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                >
-                                                    <option value="Available">Available</option>
-                                                    <option value="Locked">Locked</option>
-                                                    <option value="Not Available">Not Available</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Interest Rate (%)
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    value={sourceForm.interestRate}
-                                                    onChange={(e) => setSourceForm({ ...sourceForm, interestRate: parseFloat(e.target.value) })}
-                                                    step="0.01"
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Transfer Time
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={sourceForm.transferTime}
-                                                    onChange={(e) => setSourceForm({ ...sourceForm, transferTime: e.target.value })}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                    placeholder="e.g., Instant, 1-2 days"
-                                                />
-                                            </div>
+                                            <SourceFields
+                                                values={sourceForm}
+                                                onChange={(e) => setSourceForm({ ...sourceForm, [e.target.name]: e.target.value })}
+                                            />
                                             <button
                                                 type="submit"
                                                 className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"

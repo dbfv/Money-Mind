@@ -1,81 +1,91 @@
 import React from 'react';
+import Dropdown from '../Dropdown';
 
-const SourceFields = () => (
-    <>
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-                Source Name *
-            </label>
-            <input
-                type="text"
-                name="sourceName"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                placeholder="Enter source name"
-            />
-        </div>
+const SourceFields = ({ values = {}, onChange }) => {
+    const sourceTypeOptions = [
+        { value: 'cash', label: 'Cash 💵' },
+        { value: 'bank', label: 'Bank Account 🏦' },
+        { value: 'credit', label: 'Credit Card 💳' },
+        { value: 'investment', label: 'Investment Account 📈' },
+        { value: 'other', label: 'Other 🔄' }
+    ];
 
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-                Source Type *
-            </label>
-            <select
+    const frequencyOptions = [
+        { value: 'daily', label: 'Daily 📅' },
+        { value: 'weekly', label: 'Weekly 📆' },
+        { value: 'monthly', label: 'Monthly 📅' },
+        { value: 'yearly', label: 'Yearly 📊' }
+    ];
+
+    return (
+        <>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Source Name *
+                </label>
+                <input
+                    type="text"
+                    name="sourceName"
+                    value={values.sourceName || ''}
+                    onChange={onChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Enter source name"
+                />
+            </div>
+
+            <Dropdown
+                label="Source Type"
                 name="sourceType"
+                value={values.sourceType || ''}
+                onChange={onChange}
+                options={sourceTypeOptions}
+                placeholder="Select type"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-            >
-                <option value="">Select type</option>
-                <option value="cash">Cash</option>
-                <option value="bank">Bank Account</option>
-                <option value="credit">Credit Card</option>
-                <option value="investment">Investment Account</option>
-                <option value="other">Other</option>
-            </select>
-        </div>
-
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-                Initial Balance
-            </label>
-            <input
-                type="number"
-                name="balance"
-                step="0.01"
-                placeholder="Enter initial balance"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             />
-        </div>
 
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-                Interest Rate (%)
-            </label>
-            <input
-                type="number"
-                name="interestRate"
-                step="0.01"
-                min="0"
-                max="100"
-                placeholder="Enter interest rate"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-            />
-        </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Initial Balance
+                </label>
+                <input
+                    type="number"
+                    name="balance"
+                    value={values.balance || ''}
+                    onChange={onChange}
+                    step="0.01"
+                    placeholder="Enter initial balance"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+            </div>
 
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-                Payment Frequency
-            </label>
-            <select
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Interest Rate (%)
+                </label>
+                <input
+                    type="number"
+                    name="interestRate"
+                    value={values.interestRate || ''}
+                    onChange={onChange}
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    placeholder="Enter interest rate"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+            </div>
+
+            <Dropdown
+                label="Payment Frequency"
                 name="paymentFrequency"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-            >
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
-            </select>
-        </div>
-    </>
-);
+                value={values.paymentFrequency || ''}
+                onChange={onChange}
+                options={frequencyOptions}
+                placeholder="Select frequency"
+            />
+        </>
+    );
+};
 
 export default SourceFields;

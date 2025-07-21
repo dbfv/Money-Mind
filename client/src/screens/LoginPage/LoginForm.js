@@ -1,32 +1,19 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import PasswordRequirements from './PasswordRequirements';
+import { useNavigate, Link } from 'react-router-dom';
 
-const RegisterForm = () => {
+const LoginForm = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
-        name: '',
-        age: '',
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
-    const [successMessage, setSuccessMessage] = useState('');
     const [apiError, setApiError] = useState('');
 
-    const { email, password, name, age } = formData;
-
-    // Password requirements
-    const passwordRequirements = {
-        minLength: password.length >= 8,
-        hasUppercase: /[A-Z]/.test(password),
-        hasLowercase: /[a-z]/.test(password),
-        hasNumber: /\d/.test(password),
-        hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-    };
+    const { email, password } = formData;
 
     const onChange = (e) => {
         const { name, value } = e.target;
@@ -48,14 +35,6 @@ const RegisterForm = () => {
         else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Email is invalid';
 
         if (!password) newErrors.password = 'Password is required';
-        else if (!Object.values(passwordRequirements).every(req => req)) {
-            newErrors.password = 'Password does not meet all requirements';
-        }
-
-        if (!name) newErrors.name = 'Name is required';
-
-        if (!age) newErrors.age = 'Age is required';
-        else if (age < 18 || age > 120) newErrors.age = 'Age must be between 18 and 120';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -68,19 +47,16 @@ const RegisterForm = () => {
 
         setIsSubmitting(true);
         setApiError('');
-        setSuccessMessage('');
 
         try {
-            const response = await fetch('http://localhost:5000/api/users', {
+            const response = await fetch('http://localhost:5000/api/users/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    name,
                     email,
                     password,
-                    age: parseInt(age),
                 }),
             });
 
@@ -88,24 +64,25 @@ const RegisterForm = () => {
 
             if (!response.ok) {
                 // Handle specific error messages from the backend
-                if (data.message === 'User already exists') {
-                    setApiError('An account with this email already exists. Please try logging in instead.');
+                if (data.message === 'Invalid credentials') {
+                    setApiError('Invalid email or password. Please try again.');
                 } else {
-                    setApiError(data.message || 'Registration failed. Please try again.');
+                    setApiError(data.message || 'Login failed. Please try again.');
                 }
                 return;
             }
 
-            // Success! Show success message and redirect
-            setSuccessMessage('Account created successfully! Please login to continue.');
+            // Success! Store the token and redirect
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+            }
 
-            // Redirect to login page after 2 seconds
-            setTimeout(() => {
-                navigate('/login');
-            }, 2000);
+            // Redirect to dashboard or home page
+            navigate('/dashboard');
 
         } catch (error) {
-            console.error('Registration error:', error);
+            console.error('Login error:', error);
             setApiError('Network error. Please check your connection and try again.');
         } finally {
             setIsSubmitting(false);
@@ -131,17 +108,6 @@ const RegisterForm = () => {
 
     return (
         <>
-            {/* Success Message */}
-            {successMessage && (
-                <motion.div
-                    className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                >
-                    {successMessage}
-                </motion.div>
-            )}
-
             {/* API Error Message */}
             {apiError && (
                 <motion.div
@@ -153,7 +119,7 @@ const RegisterForm = () => {
                 </motion.div>
             )}
 
-            <form onSubmit={onSubmit} className="space-y-3">
+            <form onSubmit={onSubmit} className="space-y-6">
                 {/* Email Field */}
                 <motion.div variants={itemVariants}>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -164,7 +130,7 @@ const RegisterForm = () => {
                         name="email"
                         value={email}
                         onChange={onChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
                         placeholder="Enter your email"
                         required
                     />
@@ -189,13 +155,10 @@ const RegisterForm = () => {
                         name="password"
                         value={password}
                         onChange={onChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
                         placeholder="Enter your password"
                         required
                     />
-
-                    <PasswordRequirements requirements={passwordRequirements} />
-
                     {errors.password && (
                         <motion.p
                             className="text-red-500 text-sm mt-1"
@@ -203,58 +166,6 @@ const RegisterForm = () => {
                             animate={{ opacity: 1, y: 0 }}
                         >
                             {errors.password}
-                        </motion.p>
-                    )}
-                </motion.div>
-
-                {/* Name Field */}
-                <motion.div variants={itemVariants}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Name
-                    </label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={name}
-                        onChange={onChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
-                        placeholder="What should we call you?"
-                        required
-                    />
-                    {errors.name && (
-                        <motion.p
-                            className="text-red-500 text-sm mt-1"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                        >
-                            {errors.name}
-                        </motion.p>
-                    )}
-                </motion.div>
-
-                {/* Age Field */}
-                <motion.div variants={itemVariants}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Age
-                    </label>
-                    <input
-                        type="number"
-                        name="age"
-                        value={age}
-                        onChange={onChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.age ? 'border-red-500' : 'border-gray-300'}`}
-                        placeholder="Enter your age"
-                        min="18"
-                        max="120"
-                        required
-                    />
-                    {errors.age && (
-                        <motion.p
-                            className="text-red-500 text-sm mt-1"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                        >
-                            {errors.age}
                         </motion.p>
                     )}
                 </motion.div>
@@ -275,28 +186,28 @@ const RegisterForm = () => {
                         {isSubmitting ? (
                             <div className="flex items-center justify-center">
                                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                Creating Account...
+                                Signing In...
                             </div>
                         ) : (
-                            'Create Account'
+                            'Sign In'
                         )}
                     </motion.button>
                 </motion.div>
             </form>
 
             <motion.div
-                className="text-center mt-4"
+                className="text-center mt-6"
                 variants={itemVariants}
             >
                 <p className="text-gray-600">
-                    Already have an account?{' '}
-                    <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200">
-                        Sign in
-                    </a>
+                    Don't have an account?{' '}
+                    <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200">
+                        Sign up
+                    </Link>
                 </p>
             </motion.div>
         </>
     );
 };
 
-export default RegisterForm; 
+export default LoginForm; 

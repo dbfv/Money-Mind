@@ -1,15 +1,15 @@
 import React from 'react';
 import { BrowserRouter, Route, Routes, useLocation, Navigate } from 'react-router-dom';
-import LandingPage from './screens/LandingPage';
-import RegisterPage from './screens/RegisterPage';
-import LoginPage from './screens/LoginPage';
-import DashboardPage from './screens/DashboardPage';
-import JournalPage from './screens/JournalPage';
-import CalendarPage from './screens/CalendarPage';
-import InvestmentPage from './screens/InvestmentPage';
+import LandingPage from './screens/LandingPage/LandingPage';
+import RegisterPage from './screens/RegisterPage/RegisterPage';
+import LoginPage from './screens/LoginPage/LoginPage';
+import DashboardPage from './screens/DashboardPage/DashboardPage';
+import JournalPage from './screens/JournalPage/JournalPage';
+import CalendarPage from './screens/CalendarPage/CalendarPage';
+import InvestmentPage from './screens/InvestmentPage/InvestmentPage';
 import NavigationBar from './components/NavigationBar';
-import SourceManagementPage from './screens/SourceManagementPage';
-import ManagementPage from './screens/ManagementPage';
+import SourceManagementPage from './screens/SourceManagementPage/SourceManagementPage';
+import ManagementPage from './screens/ManagementPage/ManagementPage';
 
 // PrivateRoute component
 function PrivateRoute({ children }) {

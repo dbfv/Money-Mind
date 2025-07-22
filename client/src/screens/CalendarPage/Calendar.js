@@ -91,10 +91,10 @@ const Calendar = ({
                     <div
                         key={day.toString()}
                         className={`min-h-[90px] p-1 border border-gray-200 ${day.getMonth() !== monthStart.getMonth()
-                                ? 'bg-gray-100 text-gray-400' // Dates from other months
-                                : isSameDay(day, new Date())
-                                    ? 'bg-blue-50 border-blue-300' // Today
-                                    : 'bg-white'
+                            ? 'bg-gray-100 text-gray-400' // Dates from other months
+                            : isSameDay(day, new Date())
+                                ? 'bg-blue-50 border-blue-300' // Today
+                                : 'bg-white'
                             }`}
                         onClick={() => onDateClick(cloneDay)}
                     >

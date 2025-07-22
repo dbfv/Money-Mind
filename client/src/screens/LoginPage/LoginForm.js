@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
+import { ENDPOINTS } from '../../config/api';
 
 const LoginForm = () => {
     const navigate = useNavigate();
@@ -49,7 +50,7 @@ const LoginForm = () => {
         setApiError('');
 
         try {
-            const response = await fetch(`${process.env.SERVER_URL}/api/users/login`, {
+            const response = await fetch(ENDPOINTS.LOGIN, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -179,8 +180,8 @@ const LoginForm = () => {
                         whileHover="hover"
                         whileTap="tap"
                         className={`w-full py-3 px-6 rounded-lg font-medium text-white transition-all duration-200 ${isSubmitting
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
                             }`}
                     >
                         {isSubmitting ? (

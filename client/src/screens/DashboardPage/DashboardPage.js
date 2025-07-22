@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { ENDPOINTS } from '../../config/api';
 import Header from './components/Header';
 import FinancialSummary from './components/FinancialSummary';
 import SpendingByCategory from './components/SpendingByCategory';
@@ -37,7 +38,7 @@ const DashboardPage = () => {
                 return;
             }
 
-            const response = await fetch(`${process.env.SERVER_URL}/api/transactions/dashboard`, {
+            const response = await fetch(ENDPOINTS.DASHBOARD, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { ENDPOINTS } from '../../config/api';
 import Header from './Header';
 import TabNavigation from './TabNavigation';
 import CategoryTable from './components/CategoryTable';
@@ -42,7 +43,7 @@ const ManagementPage = () => {
 
     const fetchCategories = async () => {
         try {
-            const res = await fetch(`${process.env.SERVER_URL}/api/categories`, {
+            const res = await fetch(ENDPOINTS.CATEGORIES, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!res.ok) throw new Error('Failed to fetch categories');
@@ -55,7 +56,7 @@ const ManagementPage = () => {
 
     const fetchSources = async () => {
         try {
-            const res = await fetch(`${process.env.SERVER_URL}/api/sources`, {
+            const res = await fetch(ENDPOINTS.SOURCES, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!res.ok) throw new Error('Failed to fetch sources');
@@ -99,8 +100,8 @@ const ManagementPage = () => {
         e.preventDefault();
         try {
             const url = editingItem
-                ? `${process.env.SERVER_URL}/api/categories/${editingItem._id}`
-                : `${process.env.SERVER_URL}/api/categories`;
+                ? `${ENDPOINTS.CATEGORIES}/${editingItem._id}`
+                : ENDPOINTS.CATEGORIES;
 
             const method = editingItem ? 'PUT' : 'POST';
 
@@ -137,8 +138,8 @@ const ManagementPage = () => {
         e.preventDefault();
         try {
             const url = editingItem
-                ? `${process.env.SERVER_URL}/api/sources/${editingItem._id}`
-                : `${process.env.SERVER_URL}/api/sources`;
+                ? `${ENDPOINTS.SOURCES}/${editingItem._id}`
+                : ENDPOINTS.SOURCES;
 
             const method = editingItem ? 'PUT' : 'POST';
 
@@ -183,8 +184,8 @@ const ManagementPage = () => {
         if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
 
         try {
-            const endpoint = type === 'category' ? 'categories' : 'sources';
-            const res = await fetch(`${process.env.SERVER_URL}/api/${endpoint}/${id}`, {
+            const endpoint = type === 'category' ? ENDPOINTS.CATEGORIES : ENDPOINTS.SOURCES;
+            const res = await fetch(`${endpoint}/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

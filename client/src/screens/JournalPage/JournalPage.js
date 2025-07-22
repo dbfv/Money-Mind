@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ENDPOINTS } from '../../config/api';
 import Header from './components/Header';
 import TransactionTable from './components/TransactionTable';
 import SourcesList from './components/SourcesList';
@@ -43,7 +44,7 @@ const JournalPage = () => {
         const fetchSources = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`${process.env.SERVER_URL}/api/sources`, {
+                const res = await fetch(ENDPOINTS.SOURCES, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error('Failed to fetch sources');
@@ -61,7 +62,7 @@ const JournalPage = () => {
         const fetchCategories = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`${process.env.SERVER_URL}/api/categories`, {
+                const res = await fetch(ENDPOINTS.CATEGORIES, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error('Failed to fetch categories');
@@ -80,7 +81,7 @@ const JournalPage = () => {
         setTransactionsError(null);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.SERVER_URL}/api/transactions`, {
+            const res = await fetch(ENDPOINTS.TRANSACTIONS, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!res.ok) throw new Error('Failed to fetch transactions');
@@ -141,7 +142,7 @@ const JournalPage = () => {
     const handleDelete = async (transaction) => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.SERVER_URL}/api/transactions/${transaction._id}`, {
+            const res = await fetch(`${ENDPOINTS.TRANSACTIONS}/${transaction._id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -172,8 +173,8 @@ const JournalPage = () => {
         try {
             const token = localStorage.getItem('token');
             const url = editingItem
-                ? `${process.env.SERVER_URL}/api/transactions/${editingItem._id}`
-                : `${process.env.SERVER_URL}/api/transactions`;
+                ? `${ENDPOINTS.TRANSACTIONS}/${editingItem._id}`
+                : ENDPOINTS.TRANSACTIONS;
 
             const method = editingItem ? 'PUT' : 'POST';
 
@@ -234,7 +235,7 @@ const JournalPage = () => {
 
         try {
             setCategoryFormError(null);
-            const res = await fetch(`${process.env.SERVER_URL}/api/categories`, {
+            const res = await fetch(ENDPOINTS.CATEGORIES, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -261,7 +262,7 @@ const JournalPage = () => {
     const handleCategoryDelete = async (categoryId) => {
         if (!window.confirm('Are you sure you want to delete this category?')) return;
         try {
-            const res = await fetch(`${process.env.SERVER_URL}/api/categories/${categoryId}`, {
+            const res = await fetch(`${ENDPOINTS.CATEGORIES}/${categoryId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`

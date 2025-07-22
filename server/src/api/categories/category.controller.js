@@ -3,8 +3,18 @@ const Category = require('./category.model');
 // @desc    Create a category
 // @route   POST /api/categories
 // @access  Private
-exports.createCategory = async (req, res) => {
+exports.createType = async (req, res) => {
     try {
+        // Check for existing category with same name for this user
+        const existingCategory = await Category.findOne({
+            userId: req.user.id,
+            name: { $regex: new RegExp(`^${req.body.name}$`, 'i') } // Case insensitive match
+        });
+
+        if (existingCategory) {
+            return res.status(400).json({ message: 'A category with this name already exists' });
+        }
+
         const category = new Category({
             ...req.body,
             userId: req.user.id,
@@ -47,7 +57,7 @@ exports.getCategoryById = async (req, res) => {
 // @desc    Update a category
 // @route   PUT /api/categories/:id
 // @access  Private
-exports.updateCategory = async (req, res) => {
+exports.updateType = async (req, res) => {
     try {
         const category = await Category.findById(req.params.id);
         if (!category) {
@@ -56,6 +66,20 @@ exports.updateCategory = async (req, res) => {
         if (category.userId.toString() !== req.user.id) {
             return res.status(403).json({ message: 'Permission denied' });
         }
+
+        // If name is being changed, check for duplicates
+        if (req.body.name && req.body.name !== category.name) {
+            const existingCategory = await Category.findOne({
+                userId: req.user.id,
+                name: { $regex: new RegExp(`^${req.body.name}$`, 'i') },
+                _id: { $ne: req.params.id } // Exclude current category
+            });
+
+            if (existingCategory) {
+                return res.status(400).json({ message: 'A category with this name already exists' });
+            }
+        }
+
         const { name, type } = req.body;
         category.name = name || category.name;
         category.type = type || category.type;

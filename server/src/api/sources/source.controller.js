@@ -5,9 +5,19 @@ const Source = require('./source.model');
 // @access  Private
 exports.createSource = async (req, res) => {
   try {
+    // Check for existing source with same name for this user
+    const existingSource = await Source.findOne({
+      userId: req.user.id,
+      name: { $regex: new RegExp(`^${req.body.name}$`, 'i') } // Case insensitive match
+    });
+
+    if (existingSource) {
+      return res.status(400).json({ message: 'A source with this name already exists' });
+    }
+
     const source = new Source({
       ...req.body,
-      user: req.user.id,
+      userId: req.user.id,
     });
     const createdSource = await source.save();
     res.status(201).json(createdSource);
@@ -50,25 +60,32 @@ exports.getSourceById = async (req, res) => {
 // @access  Private
 exports.updateSource = async (req, res) => {
   try {
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: 'No token, authorization denied' });
-    }
     const source = await Source.findById(req.params.id);
     if (!source) {
       return res.status(404).json({ message: 'Source not found' });
     }
-    if (source.user.toString() !== req.user.id) {
+    if (source.userId.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Permission denied' });
     }
-    const { name, type, balance, status, interestRate, transferTime, category } = req.body;
-    source.name = name || source.name;
-    source.type = type || source.type;
-    source.balance = balance || source.balance;
-    source.status = status || source.status;
-    source.interestRate = interestRate || source.interestRate;
-    source.transferTime = transferTime || source.transferTime;
-    source.category = category || source.category;
-    const updatedSource = await source.save();
+
+    // If name is being changed, check for duplicates
+    if (req.body.name && req.body.name !== source.name) {
+      const existingSource = await Source.findOne({
+        userId: req.user.id,
+        name: { $regex: new RegExp(`^${req.body.name}$`, 'i') },
+        _id: { $ne: req.params.id } // Exclude current source
+      });
+
+      if (existingSource) {
+        return res.status(400).json({ message: 'A source with this name already exists' });
+      }
+    }
+
+    const updatedSource = await Source.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body },
+      { new: true }
+    );
     res.json(updatedSource);
   } catch (error) {
     res.status(400).json({ message: error.message });

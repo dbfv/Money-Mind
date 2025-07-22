@@ -30,6 +30,7 @@ const ManagementPage = () => {
     });
     const [editingItem, setEditingItem] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState({});
 
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
@@ -97,46 +98,42 @@ const ManagementPage = () => {
         setShowForm(true);
     };
 
-    const handleCategorySubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const url = editingItem
-                ? `${ENDPOINTS.CATEGORIES}/${editingItem._id}`
-                : ENDPOINTS.CATEGORIES;
-
-            const method = editingItem ? 'PUT' : 'POST';
-
-            const categoryData = {
-                name: categoryForm.categoryName,
-                type: categoryForm.categoryType,
-                description: categoryForm.description
-            };
-
-            const res = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(categoryData)
-            });
-
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.message || `Failed to ${editingItem ? 'update' : 'create'} category`);
-            }
-
-            await fetchCategories();
-            setCategoryForm({ categoryName: '', categoryType: 'expense', description: '' });
-            setShowForm(false);
-            setEditingItem(null);
-        } catch (error) {
-            setError(error.message);
+    const validateSourceForm = () => {
+        const errors = {};
+        if (!sourceForm.sourceName.trim()) {
+            errors.sourceName = 'Source name is required';
         }
+        if (!sourceForm.sourceType) {
+            errors.sourceType = 'Source type is required';
+        }
+        if (sourceForm.balance < 0) {
+            errors.balance = 'Balance cannot be negative';
+        }
+        if (sourceForm.interestRate < 0) {
+            errors.interestRate = 'Interest rate cannot be negative';
+        }
+        return errors;
+    };
+
+    const validateCategoryForm = () => {
+        const errors = {};
+        if (!categoryForm.categoryName.trim()) {
+            errors.categoryName = 'Category name is required';
+        }
+        if (!categoryForm.categoryType) {
+            errors.categoryType = 'Category type is required';
+        }
+        return errors;
     };
 
     const handleSourceSubmit = async (e) => {
         e.preventDefault();
+        const formErrors = validateSourceForm();
+        if (Object.keys(formErrors).length > 0) {
+            setErrors(formErrors);
+            return;
+        }
+
         setIsSubmitting(true);
         try {
             const url = editingItem
@@ -146,7 +143,7 @@ const ManagementPage = () => {
             const method = editingItem ? 'PUT' : 'POST';
 
             const sourceData = {
-                name: sourceForm.sourceName,
+                name: sourceForm.sourceName.trim(),
                 type: sourceForm.sourceType,
                 balance: parseFloat(sourceForm.balance),
                 interestRate: parseFloat(sourceForm.interestRate),
@@ -162,9 +159,9 @@ const ManagementPage = () => {
                 body: JSON.stringify(sourceData)
             });
 
+            const data = await res.json();
             if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.message || `Failed to ${editingItem ? 'update' : 'create'} source`);
+                throw new Error(data.message || `Failed to ${editingItem ? 'update' : 'create'} source`);
             }
 
             await fetchSources();
@@ -177,8 +174,57 @@ const ManagementPage = () => {
             });
             setShowForm(false);
             setEditingItem(null);
+            setErrors({});
         } catch (error) {
-            setError(error.message);
+            setErrors({ submit: error.message });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleCategorySubmit = async (e) => {
+        e.preventDefault();
+        const formErrors = validateCategoryForm();
+        if (Object.keys(formErrors).length > 0) {
+            setErrors(formErrors);
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const url = editingItem
+                ? `${ENDPOINTS.CATEGORIES}/${editingItem._id}`
+                : ENDPOINTS.CATEGORIES;
+
+            const method = editingItem ? 'PUT' : 'POST';
+
+            const categoryData = {
+                name: categoryForm.categoryName.trim(),
+                type: categoryForm.categoryType,
+                description: categoryForm.description
+            };
+
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(categoryData)
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.message || `Failed to ${editingItem ? 'update' : 'create'} category`);
+            }
+
+            await fetchCategories();
+            setCategoryForm({ categoryName: '', categoryType: 'expense', description: '' });
+            setShowForm(false);
+            setEditingItem(null);
+            setErrors({});
+        } catch (error) {
+            setErrors({ submit: error.message });
         } finally {
             setIsSubmitting(false);
         }
@@ -275,6 +321,7 @@ const ManagementPage = () => {
                                         onClose={() => setShowForm(false)}
                                         isEditing={!!editingItem}
                                         isSubmitting={isSubmitting}
+                                        errors={errors}
                                     />
                                 ) : (
                                     <SourceForm
@@ -284,6 +331,7 @@ const ManagementPage = () => {
                                         onClose={() => setShowForm(false)}
                                         isEditing={!!editingItem}
                                         isSubmitting={isSubmitting}
+                                        errors={errors}
                                     />
                                 )}
                             </motion.div>

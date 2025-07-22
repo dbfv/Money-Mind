@@ -173,7 +173,7 @@ const JournalPage = () => {
             const token = localStorage.getItem('token');
             const url = editingItem
                 ? `${process.env.REACT_APP_API_URL}/api/transactions/${editingItem._id}`
-                : '${process.env.REACT_APP_API_URL}/api/transactions';
+                : `${process.env.REACT_APP_API_URL}/api/transactions`;
 
             const method = editingItem ? 'PUT' : 'POST';
 
@@ -234,7 +234,7 @@ const JournalPage = () => {
 
         try {
             setCategoryFormError(null);
-            const res = await fetch('${process.env.REACT_APP_API_URL}/api/categories', {
+            const res = await fetch(`${process.env.REACT_APP_API_URL}/api/categories`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

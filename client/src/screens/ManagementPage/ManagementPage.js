@@ -42,8 +42,8 @@ const ManagementPage = () => {
 
     const fetchCategories = async () => {
         try {
-            const res = await fetch('${process.env.REACT_APP_API_URL}/api/categories', {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const res = await fetch(`${process.env.REACT_APP_API_URL}/api/categories', {
+                headers: { 'Authorization': `Bearer ${ token }` }
             });
             if (!res.ok) throw new Error('Failed to fetch categories');
             const data = await res.json();
@@ -55,52 +55,52 @@ const ManagementPage = () => {
 
     const fetchSources = async () => {
         try {
-            const res = await fetch('${process.env.REACT_APP_API_URL}/api/sources', {
+            const res = await fetch(`${ process.env.REACT_APP_API_URL } / api / sources', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!res.ok) throw new Error('Failed to fetch sources');
-            const data = await res.json();
-            setSources(data);
-        } catch (e) {
-            setError(e.message);
-        }
+        if (!res.ok) throw new Error('Failed to fetch sources');
+        const data = await res.json();
+        setSources(data);
+    } catch (e) {
+        setError(e.message);
+    }
+};
+
+useEffect(() => {
+    const fetchData = async () => {
+        setIsLoading(true);
+        await Promise.all([fetchCategories(), fetchSources()]);
+        setIsLoading(false);
     };
+    fetchData();
+}, [token]);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setIsLoading(true);
-            await Promise.all([fetchCategories(), fetchSources()]);
-            setIsLoading(false);
-        };
-        fetchData();
-    }, [token]);
+const handleEdit = (item, type) => {
+    if (type === 'category') {
+        setCategoryForm({
+            categoryName: item.name,
+            categoryType: item.type,
+            description: item.description || ''
+        });
+    } else {
+        setSourceForm({
+            sourceName: item.name,
+            sourceType: item.type.toLowerCase(),
+            balance: item.balance || 0,
+            interestRate: item.interestRate || 0,
+            paymentFrequency: item.paymentFrequency || 'monthly'
+        });
+    }
+    setEditingItem(item);
+    setShowForm(true);
+};
 
-    const handleEdit = (item, type) => {
-        if (type === 'category') {
-            setCategoryForm({
-                categoryName: item.name,
-                categoryType: item.type,
-                description: item.description || ''
-            });
-        } else {
-            setSourceForm({
-                sourceName: item.name,
-                sourceType: item.type.toLowerCase(),
-                balance: item.balance || 0,
-                interestRate: item.interestRate || 0,
-                paymentFrequency: item.paymentFrequency || 'monthly'
-            });
-        }
-        setEditingItem(item);
-        setShowForm(true);
-    };
-
-    const handleCategorySubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const url = editingItem
-                ? `${process.env.REACT_APP_API_URL}/api/categories/${editingItem._id}`
-                : '${process.env.REACT_APP_API_URL}/api/categories';
+const handleCategorySubmit = async (e) => {
+    e.preventDefault();
+    try {
+        const url = editingItem
+            ? `${process.env.REACT_APP_API_URL}/api/categories/${editingItem._id}`
+            : `${process.env.REACT_APP_API_URL}/api/categories';
 
             const method = editingItem ? 'PUT' : 'POST';
 
@@ -114,14 +114,14 @@ const ManagementPage = () => {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${ token }`
                 },
                 body: JSON.stringify(categoryData)
             });
 
             if (!res.ok) {
                 const errorData = await res.json();
-                throw new Error(errorData.message || `Failed to ${editingItem ? 'update' : 'create'} category`);
+                throw new Error(errorData.message || `Failed to ${ editingItem ? 'update' : 'create' } category`);
             }
 
             await fetchCategories();
@@ -137,155 +137,155 @@ const ManagementPage = () => {
         e.preventDefault();
         try {
             const url = editingItem
-                ? `${process.env.REACT_APP_API_URL}/api/sources/${editingItem._id}`
-                : '${process.env.REACT_APP_API_URL}/api/sources';
+                ? `${ process.env.REACT_APP_API_URL } /api/sources / ${ editingItem._id } `
+                : `${ process.env.REACT_APP_API_URL } /api/sources';
 
-            const method = editingItem ? 'PUT' : 'POST';
+        const method = editingItem ? 'PUT' : 'POST';
 
-            const sourceData = {
-                name: sourceForm.sourceName,
-                type: sourceForm.sourceType,
-                balance: parseFloat(sourceForm.balance),
-                interestRate: parseFloat(sourceForm.interestRate),
-                paymentFrequency: sourceForm.paymentFrequency
-            };
+        const sourceData = {
+            name: sourceForm.sourceName,
+            type: sourceForm.sourceType,
+            balance: parseFloat(sourceForm.balance),
+            interestRate: parseFloat(sourceForm.interestRate),
+            paymentFrequency: sourceForm.paymentFrequency
+        };
 
-            const res = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(sourceData)
-            });
+        const res = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(sourceData)
+        });
 
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.message || `Failed to ${editingItem ? 'update' : 'create'} source`);
-            }
-
-            await fetchSources();
-            setSourceForm({
-                sourceName: '',
-                sourceType: 'Bank Account',
-                balance: 0,
-                interestRate: 0,
-                paymentFrequency: 'monthly'
-            });
-            setShowForm(false);
-            setEditingItem(null);
-        } catch (error) {
-            setError(error.message);
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.message || `Failed to ${editingItem ? 'update' : 'create'} source`);
         }
-    };
 
-    const handleDelete = async (id, type) => {
-        if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
-
-        try {
-            const endpoint = type === 'category' ? 'categories' : 'sources';
-            const res = await fetch(`${process.env.REACT_APP_API_URL}/api/${endpoint}/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!res.ok) throw new Error(`Failed to delete ${type}`);
-
-            if (type === 'category') {
-                await fetchCategories();
-            } else {
-                await fetchSources();
-            }
-        } catch (error) {
-            setError(error.message);
-        }
-    };
-
-    const handleTabChange = (tab) => {
-        setActiveTab(tab);
+        await fetchSources();
+        setSourceForm({
+            sourceName: '',
+            sourceType: 'Bank Account',
+            balance: 0,
+            interestRate: 0,
+            paymentFrequency: 'monthly'
+        });
         setShowForm(false);
-    };
+        setEditingItem(null);
+    } catch (error) {
+        setError(error.message);
+    }
+};
 
-    return (
-        <div className="pt-16 p-8">
-            <div className="max-w-7xl mx-auto">
-                <Header error={error} />
-                <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+const handleDelete = async (id, type) => {
+    if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
 
-                {/* Content */}
-                <div className="flex gap-6">
-                    {/* Table Section */}
-                    <motion.div
-                        className={`bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden ${showForm ? 'w-2/3' : 'w-full'}`}
-                        layout
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    >
-                        {activeTab === 'categories' ? (
-                            <CategoryTable
-                                categories={categories}
-                                onEdit={(category) => handleEdit(category, 'category')}
-                                onDelete={(id) => handleDelete(id, 'category')}
-                                onAdd={() => {
-                                    setCategoryForm({ categoryName: '', categoryType: 'expense', description: '' });
-                                    setEditingItem(null);
-                                    setShowForm(true);
-                                }}
-                                showForm={showForm}
-                            />
-                        ) : (
-                            <SourceTable
-                                sources={sources}
-                                onEdit={(source) => handleEdit(source, 'source')}
-                                onDelete={(id) => handleDelete(id, 'source')}
-                                onAdd={() => {
-                                    setSourceForm({
-                                        sourceName: '',
-                                        sourceType: 'Bank Account',
-                                        balance: 0,
-                                        interestRate: 0,
-                                        paymentFrequency: 'monthly'
-                                    });
-                                    setEditingItem(null);
-                                    setShowForm(true);
-                                }}
-                                showForm={showForm}
-                            />
-                        )}
-                    </motion.div>
+    try {
+        const endpoint = type === 'category' ? 'categories' : 'sources';
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/${endpoint}/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-                    {/* Form Section */}
-                    <AnimatePresence>
-                        {showForm && (
-                            <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 20 }}
-                                className="w-1/3 bg-white rounded-xl shadow-lg border border-gray-200 p-6"
-                            >
-                                {activeTab === 'categories' ? (
-                                    <CategoryForm
-                                        values={categoryForm}
-                                        onChange={(e) => setCategoryForm({ ...categoryForm, [e.target.name]: e.target.value })}
-                                        onSubmit={handleCategorySubmit}
-                                        onClose={() => setShowForm(false)}
-                                        isEditing={!!editingItem}
-                                    />
-                                ) : (
-                                    <SourceForm
-                                        values={sourceForm}
-                                        onChange={(e) => setSourceForm({ ...sourceForm, [e.target.name]: e.target.value })}
-                                        onSubmit={handleSourceSubmit}
-                                        onClose={() => setShowForm(false)}
-                                        isEditing={!!editingItem}
-                                    />
-                                )}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
+        if (!res.ok) throw new Error(`Failed to delete ${type}`);
+
+        if (type === 'category') {
+            await fetchCategories();
+        } else {
+            await fetchSources();
+        }
+    } catch (error) {
+        setError(error.message);
+    }
+};
+
+const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setShowForm(false);
+};
+
+return (
+    <div className="pt-16 p-8">
+        <div className="max-w-7xl mx-auto">
+            <Header error={error} />
+            <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+
+            {/* Content */}
+            <div className="flex gap-6">
+                {/* Table Section */}
+                <motion.div
+                    className={`bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden ${showForm ? 'w-2/3' : 'w-full'}`}
+                    layout
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                >
+                    {activeTab === 'categories' ? (
+                        <CategoryTable
+                            categories={categories}
+                            onEdit={(category) => handleEdit(category, 'category')}
+                            onDelete={(id) => handleDelete(id, 'category')}
+                            onAdd={() => {
+                                setCategoryForm({ categoryName: '', categoryType: 'expense', description: '' });
+                                setEditingItem(null);
+                                setShowForm(true);
+                            }}
+                            showForm={showForm}
+                        />
+                    ) : (
+                        <SourceTable
+                            sources={sources}
+                            onEdit={(source) => handleEdit(source, 'source')}
+                            onDelete={(id) => handleDelete(id, 'source')}
+                            onAdd={() => {
+                                setSourceForm({
+                                    sourceName: '',
+                                    sourceType: 'Bank Account',
+                                    balance: 0,
+                                    interestRate: 0,
+                                    paymentFrequency: 'monthly'
+                                });
+                                setEditingItem(null);
+                                setShowForm(true);
+                            }}
+                            showForm={showForm}
+                        />
+                    )}
+                </motion.div>
+
+                {/* Form Section */}
+                <AnimatePresence>
+                    {showForm && (
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            className="w-1/3 bg-white rounded-xl shadow-lg border border-gray-200 p-6"
+                        >
+                            {activeTab === 'categories' ? (
+                                <CategoryForm
+                                    values={categoryForm}
+                                    onChange={(e) => setCategoryForm({ ...categoryForm, [e.target.name]: e.target.value })}
+                                    onSubmit={handleCategorySubmit}
+                                    onClose={() => setShowForm(false)}
+                                    isEditing={!!editingItem}
+                                />
+                            ) : (
+                                <SourceForm
+                                    values={sourceForm}
+                                    onChange={(e) => setSourceForm({ ...sourceForm, [e.target.name]: e.target.value })}
+                                    onSubmit={handleSourceSubmit}
+                                    onClose={() => setShowForm(false)}
+                                    isEditing={!!editingItem}
+                                />
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
-    );
+    </div>
+);
 };
 
 export default ManagementPage; 

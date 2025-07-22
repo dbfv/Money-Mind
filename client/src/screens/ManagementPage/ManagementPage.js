@@ -29,6 +29,7 @@ const ManagementPage = () => {
         paymentFrequency: 'monthly'
     });
     const [editingItem, setEditingItem] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
@@ -136,6 +137,7 @@ const ManagementPage = () => {
 
     const handleSourceSubmit = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             const url = editingItem
                 ? `${ENDPOINTS.SOURCES}/${editingItem._id}`
@@ -177,6 +179,8 @@ const ManagementPage = () => {
             setEditingItem(null);
         } catch (error) {
             setError(error.message);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -270,6 +274,7 @@ const ManagementPage = () => {
                                         onSubmit={handleCategorySubmit}
                                         onClose={() => setShowForm(false)}
                                         isEditing={!!editingItem}
+                                        isSubmitting={isSubmitting}
                                     />
                                 ) : (
                                     <SourceForm
@@ -278,6 +283,7 @@ const ManagementPage = () => {
                                         onSubmit={handleSourceSubmit}
                                         onClose={() => setShowForm(false)}
                                         isEditing={!!editingItem}
+                                        isSubmitting={isSubmitting}
                                     />
                                 )}
                             </motion.div>

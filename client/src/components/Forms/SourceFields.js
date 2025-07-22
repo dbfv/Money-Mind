@@ -1,7 +1,7 @@
 import React from 'react';
 import Dropdown from '../Dropdown';
 
-const SourceFields = ({ values = {}, onChange }) => {
+const SourceFields = ({ values = {}, onChange, disabled = false }) => {
     const sourceTypeOptions = [
         { value: 'Bank Account', label: 'Bank Account 🏦' },
         { value: 'E-Wallet', label: 'E-Wallet 💳' },
@@ -28,7 +28,9 @@ const SourceFields = ({ values = {}, onChange }) => {
                     value={values.sourceName || ''}
                     onChange={onChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    disabled={disabled}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'border-gray-300'
+                        }`}
                     placeholder="Enter source name"
                 />
             </div>
@@ -41,6 +43,7 @@ const SourceFields = ({ values = {}, onChange }) => {
                 options={sourceTypeOptions}
                 placeholder="Select type"
                 required
+                disabled={disabled}
             />
 
             <div>
@@ -54,7 +57,9 @@ const SourceFields = ({ values = {}, onChange }) => {
                     onChange={onChange}
                     step="0.01"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    disabled={disabled}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'border-gray-300'
+                        }`}
                     placeholder="Enter initial balance"
                 />
             </div>
@@ -70,7 +75,9 @@ const SourceFields = ({ values = {}, onChange }) => {
                     onChange={onChange}
                     step="0.01"
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    disabled={disabled}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'border-gray-300'
+                        }`}
                     placeholder="Enter interest rate"
                 />
             </div>
@@ -82,6 +89,7 @@ const SourceFields = ({ values = {}, onChange }) => {
                 onChange={onChange}
                 options={frequencyOptions}
                 placeholder="Select frequency"
+                disabled={disabled}
             />
         </>
     );

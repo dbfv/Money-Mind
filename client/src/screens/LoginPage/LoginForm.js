@@ -49,7 +49,7 @@ const LoginForm = () => {
         setApiError('');
 
         try {
-            const response = await fetch(`${process.env.SERVER_URL}/api/users/login', {
+            const response = await fetch(`${process.env.SERVER_URL}/api/users/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ const LoginForm = () => {
                         name="email"
                         value={email}
                         onChange={onChange}
-                        className={`w - full px - 4 py - 3 border rounded - lg focus: ring - 2 focus: ring - blue - 500 focus: border - transparent transition - all duration - 200 ${ errors.email ? 'border-red-500' : 'border-gray-300' }`}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
                         placeholder="Enter your email"
                         required
                     />
@@ -155,7 +155,7 @@ const LoginForm = () => {
                         name="password"
                         value={password}
                         onChange={onChange}
-                        className={`w - full px - 4 py - 3 border rounded - lg focus: ring - 2 focus: ring - blue - 500 focus: border - transparent transition - all duration - 200 ${ errors.password ? 'border-red-500' : 'border-gray-300' }`}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
                         placeholder="Enter your password"
                         required
                     />
@@ -178,11 +178,10 @@ const LoginForm = () => {
                         variants={buttonVariants}
                         whileHover="hover"
                         whileTap="tap"
-                        className={`w - full py - 3 px - 6 rounded - lg font - medium text - white transition - all duration - 200 ${
-                isSubmitting
-                ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
-            }`}
+                        className={`w-full py-3 px-6 rounded-lg font-medium text-white transition-all duration-200 ${isSubmitting
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                            }`}
                     >
                         {isSubmitting ? (
                             <div className="flex items-center justify-center">

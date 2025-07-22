@@ -37,9 +37,9 @@ const DashboardPage = () => {
                 return;
             }
 
-            const response = await fetch(`${process.env.SERVER_URL}/api/transactions/dashboard', {
+            const response = await fetch(`${process.env.SERVER_URL}/api/transactions/dashboard`, {
                 headers: {
-                    'Authorization': `Bearer ${ token }`
+                    'Authorization': `Bearer ${token}`
                 }
             });
 

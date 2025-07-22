@@ -42,7 +42,7 @@ const ManagementPage = () => {
 
     const fetchCategories = async () => {
         try {
-            const res = await fetch(`${process.env.REACT_APP_API_URL}/api/categories', {
+            const res = await fetch(`${process.env.SERVER_URL}/api/categories', {
                 headers: { 'Authorization': `Bearer ${ token }` }
             });
             if (!res.ok) throw new Error('Failed to fetch categories');
@@ -55,7 +55,7 @@ const ManagementPage = () => {
 
     const fetchSources = async () => {
         try {
-            const res = await fetch(`${ process.env.REACT_APP_API_URL } / api / sources', {
+            const res = await fetch(`${ process.env.SERVER_URL } / api / sources', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
         if (!res.ok) throw new Error('Failed to fetch sources');
@@ -99,8 +99,8 @@ const handleCategorySubmit = async (e) => {
     e.preventDefault();
     try {
         const url = editingItem
-            ? `${process.env.REACT_APP_API_URL}/api/categories/${editingItem._id}`
-            : `${process.env.REACT_APP_API_URL}/api/categories';
+            ? `${process.env.SERVER_URL}/api/categories/${editingItem._id}`
+            : `${process.env.SERVER_URL}/api/categories';
 
             const method = editingItem ? 'PUT' : 'POST';
 
@@ -137,8 +137,8 @@ const handleCategorySubmit = async (e) => {
         e.preventDefault();
         try {
             const url = editingItem
-                ? `${ process.env.REACT_APP_API_URL } /api/sources / ${ editingItem._id } `
-                : `${ process.env.REACT_APP_API_URL } /api/sources';
+                ? `${ process.env.SERVER_URL } /api/sources / ${ editingItem._id } `
+                : `${ process.env.SERVER_URL } /api/sources';
 
         const method = editingItem ? 'PUT' : 'POST';
 
@@ -184,7 +184,7 @@ const handleDelete = async (id, type) => {
 
     try {
         const endpoint = type === 'category' ? 'categories' : 'sources';
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/${endpoint}/${id}`, {
+        const res = await fetch(`${process.env.SERVER_URL}/api/${endpoint}/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });

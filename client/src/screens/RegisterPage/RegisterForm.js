@@ -71,7 +71,7 @@ const RegisterForm = () => {
         setSuccessMessage('');
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users`, {
+            const response = await fetch(`${process.env.SERVER_URL}/api/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

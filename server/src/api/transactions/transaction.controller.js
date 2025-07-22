@@ -1,6 +1,6 @@
 const Transaction = require('./transaction.model');
 const Source = require('../sources/source.model');
-const Type = require('../types/type.model');
+const Category = require('../categories/category.model');
 const mongoose = require('mongoose');
 
 // @desc    Create a transaction
@@ -12,14 +12,14 @@ exports.createTransaction = async (req, res) => {
   try {
     const { amount, type, date, description, category, source } = req.body;
 
-    // Validate category ObjectId (this is actually the type field in the form)
+    // Validate category ObjectId
     if (!mongoose.Types.ObjectId.isValid(category)) {
-      throw new Error('Invalid type ID');
+      throw new Error('Invalid category ID');
     }
-    // Check if type exists
-    const typeDoc = await Type.findById(category);
-    if (!typeDoc) {
-      throw new Error('Type not found');
+    // Check if category exists
+    const categoryDoc = await Category.findById(category);
+    if (!categoryDoc) {
+      throw new Error('Category not found');
     }
 
     // 1. Create the transaction
@@ -118,7 +118,7 @@ exports.getDashboardStats = async (req, res) => {
       },
       {
         $lookup: {
-          from: 'categories',
+          from: 'categories',  // This should match the collection name in MongoDB
           localField: 'category',
           foreignField: '_id',
           as: 'categoryInfo'

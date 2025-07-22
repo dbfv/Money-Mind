@@ -27,7 +27,7 @@ const transactionSchema = new Schema({
   },
   category: {
     type: Schema.Types.ObjectId,
-    ref: 'Type',
+    ref: 'Category',
     required: true,
   },
   source: {

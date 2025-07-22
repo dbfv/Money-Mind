@@ -20,6 +20,7 @@ const JournalPage = () => {
         source: ''
     });
     const [errors, setErrors] = useState({});
+    const [error, setError] = useState(null);
     const [sources, setSources] = useState([]);
     const [categories, setCategories] = useState([]);
     const [transactions, setTransactions] = useState([]);
@@ -27,6 +28,7 @@ const JournalPage = () => {
     const [transactionsError, setTransactionsError] = useState(null);
     const [showCategoryForm, setShowCategoryForm] = useState(false);
     const [categoryFormError, setCategoryFormError] = useState(null);
+    const [editingItem, setEditingItem] = useState(null);
 
     // Check URL for showForm parameter
     useEffect(() => {
@@ -123,6 +125,43 @@ const JournalPage = () => {
         return Object.keys(newErrors).length === 0;
     };
 
+    const handleEdit = (transaction) => {
+        setFormData({
+            amount: transaction.amount.toString(),
+            date: new Date(transaction.date).toISOString().split('T')[0],
+            description: transaction.description,
+            category: transaction.category._id || transaction.category,
+            source: transaction.source._id || transaction.source,
+            type: transaction.type
+        });
+        setEditingItem(transaction);
+        setShowForm(true);
+    };
+
+    const handleDelete = async (transaction) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`http://localhost:5000/api/transactions/${transaction._id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ message: 'Failed to delete transaction' }));
+                throw new Error(errorData.message || 'Failed to delete transaction');
+            }
+
+            // Only update the UI if the delete was successful
+            await fetchTransactions();
+            setError(null); // Clear any previous errors
+        } catch (error) {
+            setError(error.message);
+            console.error('Error deleting transaction:', error);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -131,11 +170,18 @@ const JournalPage = () => {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/transactions', {
-                method: 'POST',
+            const token = localStorage.getItem('token');
+            const url = editingItem
+                ? `http://localhost:5000/api/transactions/${editingItem._id}`
+                : 'http://localhost:5000/api/transactions';
+
+            const method = editingItem ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     amount: parseFloat(formData.amount),
@@ -157,12 +203,13 @@ const JournalPage = () => {
                     source: ''
                 });
                 setShowForm(false);
+                setEditingItem(null);
                 // Remove the showForm parameter from URL
                 navigate('/journal');
-                fetchTransactions(); // Refetch transactions after adding
+                fetchTransactions(); // Refetch transactions after adding/updating
             } else {
                 const data = await response.json();
-                setErrors({ submit: data.message || 'Failed to create transaction' });
+                setErrors({ submit: data.message || `Failed to ${editingItem ? 'update' : 'create'} transaction` });
             }
         } catch (error) {
             setErrors({ submit: 'Network error. Please try again.' });
@@ -259,13 +306,25 @@ const JournalPage = () => {
                             animate="visible"
                         >
                             {/* Header */}
-                            <Header onAddTransaction={() => setShowForm(true)} />
+                            <Header onAddTransaction={() => {
+                                setFormData({
+                                    amount: '',
+                                    date: new Date().toISOString().split('T')[0],
+                                    description: '',
+                                    category: '',
+                                    source: ''
+                                });
+                                setEditingItem(null);
+                                setShowForm(true);
+                            }} />
 
                             {/* Journal Table Content */}
                             <TransactionTable
                                 transactions={transactions}
                                 isLoading={isLoadingTransactions}
                                 error={transactionsError}
+                                onEdit={handleEdit}
+                                onDelete={handleDelete}
                             />
                         </motion.div>
                     </div>

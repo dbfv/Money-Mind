@@ -205,3 +205,102 @@ exports.getDashboardStats = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Update a transaction
+// @route   PUT /api/transactions/:id
+// @access  Private
+exports.updateTransaction = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const { amount, type, date, description, category, source } = req.body;
+    const transaction = await Transaction.findById(req.params.id);
+
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
+
+    if (transaction.userId.toString() !== req.user.id) {
+      throw new Error('User not authorized');
+    }
+
+    // If source is being changed or amount is different, we need to update both old and new source balances
+    if (source !== transaction.source.toString() || amount !== transaction.amount) {
+      // Revert the old source balance
+      const oldSource = await Source.findById(transaction.source).session(session);
+      if (transaction.type === 'expense') {
+        oldSource.balance += transaction.amount;
+      } else {
+        oldSource.balance -= transaction.amount;
+      }
+      await oldSource.save({ session });
+
+      // Update the new source balance
+      const newSource = await Source.findById(source || transaction.source).session(session);
+      if (type === 'expense') {
+        newSource.balance -= amount;
+      } else {
+        newSource.balance += amount;
+      }
+      await newSource.save({ session });
+    }
+
+    // Update the transaction
+    transaction.amount = amount;
+    transaction.type = type;
+    transaction.date = date;
+    transaction.description = description;
+    transaction.category = category;
+    transaction.source = source || transaction.source;
+
+    const updatedTransaction = await transaction.save({ session });
+    await session.commitTransaction();
+    session.endSession();
+
+    res.json(updatedTransaction);
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// @desc    Delete a transaction
+// @route   DELETE /api/transactions/:id
+// @access  Private
+exports.deleteTransaction = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const transaction = await Transaction.findById(req.params.id);
+
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
+
+    if (transaction.userId.toString() !== req.user.id) {
+      throw new Error('User not authorized');
+    }
+
+    // Update source balance
+    const source = await Source.findById(transaction.source).session(session);
+    if (transaction.type === 'expense') {
+      source.balance += transaction.amount;
+    } else {
+      source.balance -= transaction.amount;
+    }
+    await source.save({ session });
+
+    // Delete the transaction
+    await Transaction.deleteOne({ _id: req.params.id }).session(session);
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.json({ message: 'Transaction removed' });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    res.status(400).json({ message: error.message });
+  }
+};

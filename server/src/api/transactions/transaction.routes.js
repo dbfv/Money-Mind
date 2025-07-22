@@ -6,7 +6,12 @@ const transactionRoutes = (app) => {
         .post(auth, transactionController.createTransaction)
         .get(auth, transactionController.getTransactions);
 
+    // Specific routes should come before parameter routes
     app.get('/api/transactions/dashboard', auth, transactionController.getDashboardStats);
+
+    app.route('/api/transactions/:id')
+        .put(auth, transactionController.updateTransaction)
+        .delete(auth, transactionController.deleteTransaction);
 };
 
 module.exports = transactionRoutes;

@@ -42,7 +42,7 @@ const ManagementPage = () => {
 
     const fetchCategories = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/types', {
+            const res = await fetch('http://localhost:5000/api/categories', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!res.ok) throw new Error('Failed to fetch categories');
@@ -99,8 +99,8 @@ const ManagementPage = () => {
         e.preventDefault();
         try {
             const url = editingItem
-                ? `http://localhost:5000/api/types/${editingItem._id}`
-                : 'http://localhost:5000/api/types';
+                ? `http://localhost:5000/api/categories/${editingItem._id}`
+                : 'http://localhost:5000/api/categories';
 
             const method = editingItem ? 'PUT' : 'POST';
 
@@ -183,7 +183,7 @@ const ManagementPage = () => {
         if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
 
         try {
-            const endpoint = type === 'category' ? 'types' : 'sources';
+            const endpoint = type === 'category' ? 'categories' : 'sources';
             const res = await fetch(`http://localhost:5000/api/${endpoint}/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }

@@ -59,7 +59,7 @@ const JournalPage = () => {
         const fetchCategories = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('http://localhost:5000/api/types', {
+                const res = await fetch('http://localhost:5000/api/categories', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error('Failed to fetch categories');
@@ -187,7 +187,7 @@ const JournalPage = () => {
 
         try {
             setCategoryFormError(null);
-            const res = await fetch('http://localhost:5000/api/types', {
+            const res = await fetch('http://localhost:5000/api/categories', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -214,7 +214,7 @@ const JournalPage = () => {
     const handleCategoryDelete = async (categoryId) => {
         if (!window.confirm('Are you sure you want to delete this category?')) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/types/${categoryId}`, {
+            const res = await fetch(`http://localhost:5000/api/categories/${categoryId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`

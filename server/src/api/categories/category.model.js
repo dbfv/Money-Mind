@@ -1,6 +1,6 @@
 const { Schema, model } = require('mongoose');
 
-const typeSchema = new Schema({
+const categorySchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
@@ -23,5 +23,5 @@ const typeSchema = new Schema({
   },
 });
 
-const Type = model('Type', typeSchema);
-module.exports = Type;
+const Category = model('Category', categorySchema);
+module.exports = Category;

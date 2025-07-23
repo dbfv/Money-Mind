@@ -3,7 +3,7 @@ const Category = require('./category.model');
 // @desc    Create a category
 // @route   POST /api/categories
 // @access  Private
-exports.createType = async (req, res) => {
+exports.createCategory = async (req, res) => {
     try {
         // Check for existing category with same name for this user
         const existingCategory = await Category.findOne({
@@ -57,7 +57,7 @@ exports.getCategoryById = async (req, res) => {
 // @desc    Update a category
 // @route   PUT /api/categories/:id
 // @access  Private
-exports.updateType = async (req, res) => {
+exports.updateCategory = async (req, res) => {
     try {
         const category = await Category.findById(req.params.id);
         if (!category) {

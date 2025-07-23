@@ -67,10 +67,11 @@ exports.getTransactions = async (req, res) => {
   try {
     const transactions = await Transaction.find({ userId: req.user.id })
       .populate('category')
-      .populate('source');
+      .populate('source')
+      .sort({ date: -1 }); // Sort by date descending
     res.json(transactions);
   } catch (error) {
-    console.error('Dashboard error:', error); // Debug log
+    console.error('Transactions error:', error); // Debug log
     res.status(500).json({ message: error.message });
   }
 };
@@ -93,7 +94,7 @@ exports.getDashboardStats = async (req, res) => {
       userId,
       date: { $gte: startOfMonth, $lte: endOfMonth }
     })
-      //.populate('category')
+      .populate('category')
       .populate('source');
 
     // Calculate financial summary
@@ -118,7 +119,7 @@ exports.getDashboardStats = async (req, res) => {
       },
       {
         $lookup: {
-          from: 'categories',  // This should match the collection name in MongoDB
+          from: 'categories',  // Lowercase collection name as MongoDB automatically lowercases it
           localField: 'category',
           foreignField: '_id',
           as: 'categoryInfo'
@@ -174,7 +175,7 @@ exports.getDashboardStats = async (req, res) => {
     }
 
     // Get total amount from all sources
-    const sources = await Source.find({ user: userId });
+    const sources = await Source.find({ userId: userId });
     const totalAmount = sources.reduce((sum, src) => sum + (src.balance || 0), 0);
 
     // 6 jars analysis (default percentages, can be customized per user in future)

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Calendar from './Calendar';
 import EventForm from './EventForm';
+import ConfirmationDialog from '../../components/ConfirmationDialog';
 
 const CalendarPage = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -19,6 +20,7 @@ const CalendarPage = () => {
         recurring: false,
         frequency: 'monthly',
     });
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     // Event colors based on type
     const eventColors = {
@@ -152,19 +154,26 @@ const CalendarPage = () => {
         }
     };
 
+    const handleDeleteClick = () => {
+        if (!selectedEvent) {
+            closeModal();
+            return;
+        }
+        setShowDeleteConfirm(true);
+    };
+
     const handleDelete = () => {
         if (!selectedEvent) {
             closeModal();
             return;
         }
 
-        if (window.confirm('Are you sure you want to delete this event?')) {
-            // API call would go here
+        // API call would go here
 
-            // For now, update UI
-            setEvents(events.filter(event => event.id !== selectedEvent.id));
-            closeModal();
-        }
+        // For now, update UI
+        setEvents(events.filter(event => event.id !== selectedEvent.id));
+        closeModal();
+        setShowDeleteConfirm(false);
     };
 
     const closeModal = () => {
@@ -291,17 +300,28 @@ const CalendarPage = () => {
             </div>
 
             {/* Event Form Modal */}
-            <EventForm
-                isOpen={showEventModal}
-                onClose={closeModal}
-                onSubmit={handleSubmit}
-                onDelete={handleDelete}
-                selectedEvent={selectedEvent}
-                newEvent={newEvent}
-                onEventChange={handleInputChange}
-                onSelectedEventChange={handleSelectedEventChange}
-                typeOptions={typeOptions}
-                frequencyOptions={frequencyOptions}
+            {showEventModal && (
+                <EventForm
+                    onClose={closeModal}
+                    event={selectedEvent || newEvent}
+                    onChange={selectedEvent ? handleSelectedEventChange : handleInputChange}
+                    onSubmit={handleSubmit}
+                    onDelete={handleDeleteClick}
+                    isNew={!selectedEvent}
+                    error={error}
+                />
+            )}
+
+            {/* Delete Confirmation Dialog */}
+            <ConfirmationDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDelete}
+                title="Delete Event"
+                message="Are you sure you want to delete this financial event? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
             />
         </div>
     );

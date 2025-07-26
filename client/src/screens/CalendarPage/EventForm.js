@@ -4,19 +4,37 @@ import Dropdown from '../../components/Dropdown';
 import PopupForm from '../../components/PopupForm';
 
 const EventForm = ({
-    isOpen,
     onClose,
     onSubmit,
     onDelete,
-    selectedEvent,
-    newEvent,
-    onEventChange,
-    onSelectedEventChange,
-    typeOptions,
-    frequencyOptions,
+    event,
+    onChange,
+    isNew,
+    error
 }) => {
+    // Type and frequency options
+    const typeOptions = [
+        { value: 'income', label: 'Income' },
+        { value: 'expense', label: 'Expense' }
+    ];
+
+    const frequencyOptions = [
+        { value: 'daily', label: 'Daily' },
+        { value: 'weekly', label: 'Weekly' },
+        { value: 'biweekly', label: 'Bi-weekly' },
+        { value: 'monthly', label: 'Monthly' },
+        { value: 'quarterly', label: 'Quarterly' },
+        { value: 'annually', label: 'Annually' }
+    ];
+
     const formContent = (
         <>
+            {error && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {error}
+                </div>
+            )}
+
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Title
@@ -24,8 +42,8 @@ const EventForm = ({
                 <input
                     type="text"
                     name="title"
-                    value={selectedEvent ? selectedEvent.title : newEvent.title}
-                    onChange={selectedEvent ? onSelectedEventChange : onEventChange}
+                    value={event.title}
+                    onChange={onChange}
                     className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 border-gray-300"
                     placeholder="e.g. Rent Payment, Salary, etc."
                     required
@@ -37,8 +55,8 @@ const EventForm = ({
                     <Dropdown
                         label="Type"
                         name="type"
-                        value={selectedEvent ? selectedEvent.type : newEvent.type}
-                        onChange={selectedEvent ? onSelectedEventChange : onEventChange}
+                        value={event.type}
+                        onChange={onChange}
                         options={typeOptions}
                         required
                     />
@@ -51,8 +69,8 @@ const EventForm = ({
                     <input
                         type="number"
                         name="amount"
-                        value={selectedEvent ? selectedEvent.amount : newEvent.amount}
-                        onChange={selectedEvent ? onSelectedEventChange : onEventChange}
+                        value={event.amount}
+                        onChange={onChange}
                         className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 border-gray-300"
                         placeholder="0.00"
                         step="0.01"
@@ -67,8 +85,8 @@ const EventForm = ({
                 <input
                     type="date"
                     name="date"
-                    value={selectedEvent ? selectedEvent.date : newEvent.date}
-                    onChange={selectedEvent ? onSelectedEventChange : onEventChange}
+                    value={event.date}
+                    onChange={onChange}
                     className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 border-gray-300"
                     required
                 />
@@ -79,8 +97,8 @@ const EventForm = ({
                     type="checkbox"
                     id="recurring"
                     name="recurring"
-                    checked={selectedEvent ? selectedEvent.recurring : newEvent.recurring}
-                    onChange={selectedEvent ? onSelectedEventChange : onEventChange}
+                    checked={event.recurring}
+                    onChange={onChange}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="recurring" className="ml-2 block text-sm text-gray-700">
@@ -88,19 +106,19 @@ const EventForm = ({
                 </label>
             </div>
 
-            {(selectedEvent?.recurring || newEvent.recurring) && (
+            {event.recurring && (
                 <div>
                     <Dropdown
                         label="Frequency"
                         name="frequency"
-                        value={selectedEvent ? selectedEvent.frequency : newEvent.frequency}
-                        onChange={selectedEvent ? onSelectedEventChange : onEventChange}
+                        value={event.frequency}
+                        onChange={onChange}
                         options={frequencyOptions}
                     />
                 </div>
             )}
 
-            {selectedEvent && (
+            {!isNew && (
                 <div className="flex justify-start">
                     <motion.button
                         type="button"
@@ -118,11 +136,11 @@ const EventForm = ({
 
     return (
         <PopupForm
-            isOpen={isOpen}
+            isOpen={true}
             onClose={onClose}
             onSubmit={onSubmit}
-            title={selectedEvent ? 'Edit Event' : 'Add New Event'}
-            submitText={selectedEvent ? 'Update' : 'Create'}
+            title={isNew ? 'Add New Event' : 'Edit Event'}
+            submitText={isNew ? 'Create' : 'Update'}
         >
             {formContent}
         </PopupForm>

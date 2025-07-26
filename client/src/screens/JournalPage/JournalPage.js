@@ -7,6 +7,7 @@ import TransactionTable from './components/TransactionTable';
 import SourcesList from './components/SourcesList';
 import TransactionForm from './components/TransactionForm';
 import CategoryForm from './components/CategoryForm';
+import ConfirmationDialog from '../../components/ConfirmationDialog';
 
 const JournalPage = () => {
     const location = useLocation();
@@ -30,6 +31,8 @@ const JournalPage = () => {
     const [showCategoryForm, setShowCategoryForm] = useState(false);
     const [categoryFormError, setCategoryFormError] = useState(null);
     const [editingItem, setEditingItem] = useState(null);
+    const [showCategoryDeleteDialog, setShowCategoryDeleteDialog] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState(null);
 
     // Check URL for showForm parameter
     useEffect(() => {
@@ -259,17 +262,22 @@ const JournalPage = () => {
         }
     };
 
-    const handleCategoryDelete = async (categoryId) => {
-        if (!window.confirm('Are you sure you want to delete this category?')) return;
+    const handleCategoryDeleteClick = (categoryId) => {
+        setCategoryToDelete(categoryId);
+        setShowCategoryDeleteDialog(true);
+    };
+
+    const handleCategoryDelete = async () => {
+        if (!categoryToDelete) return;
         try {
-            const res = await fetch(`${ENDPOINTS.CATEGORIES}/${categoryId}`, {
+            const res = await fetch(`${ENDPOINTS.CATEGORIES}/${categoryToDelete}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
             if (!res.ok) throw new Error('Failed to delete category');
-            setCategories(prev => prev.filter(c => c._id !== categoryId));
+            setCategories(prev => prev.filter(c => c._id !== categoryToDelete));
         } catch (error) {
             console.error('Error deleting category:', error);
         }
@@ -342,7 +350,7 @@ const JournalPage = () => {
                     onClose={() => setShowCategoryForm(false)}
                     categories={categories}
                     onSubmit={handleCategorySubmit}
-                    onDelete={handleCategoryDelete}
+                    onDelete={handleCategoryDeleteClick}
                     error={categoryFormError}
                 />
 
@@ -359,6 +367,18 @@ const JournalPage = () => {
                     sources={sources}
                 />
             </div>
+
+            {/* Category Delete Confirmation Dialog */}
+            <ConfirmationDialog
+                isOpen={showCategoryDeleteDialog}
+                onClose={() => setShowCategoryDeleteDialog(false)}
+                onConfirm={handleCategoryDelete}
+                title="Delete Category"
+                message="Are you sure you want to delete this category? This will not delete associated transactions, but they will no longer be categorized."
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+            />
         </div>
     );
 };

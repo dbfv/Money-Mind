@@ -8,6 +8,7 @@ import CategoryTable from './components/CategoryTable';
 import SourceTable from './components/SourceTable';
 import CategoryForm from './components/CategoryForm';
 import SourceForm from './components/SourceForm';
+import ConfirmationDialog from '../../components/ConfirmationDialog';
 
 const ManagementPage = () => {
     const [activeTab, setActiveTab] = useState('categories');
@@ -31,6 +32,9 @@ const ManagementPage = () => {
     const [editingItem, setEditingItem] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const [deleteType, setDeleteType] = useState('');
 
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
@@ -230,19 +234,25 @@ const ManagementPage = () => {
         }
     };
 
-    const handleDelete = async (id, type) => {
-        if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
+    const handleDeleteClick = (id, type) => {
+        setItemToDelete(id);
+        setDeleteType(type);
+        setShowDeleteConfirm(true);
+    };
+
+    const handleDelete = async () => {
+        if (!itemToDelete || !deleteType) return;
 
         try {
-            const endpoint = type === 'category' ? ENDPOINTS.CATEGORIES : ENDPOINTS.SOURCES;
-            const res = await fetch(`${endpoint}/${id}`, {
+            const endpoint = deleteType === 'category' ? ENDPOINTS.CATEGORIES : ENDPOINTS.SOURCES;
+            const res = await fetch(`${endpoint}/${itemToDelete}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!res.ok) throw new Error(`Failed to delete ${type}`);
+            if (!res.ok) throw new Error(`Failed to delete ${deleteType}`);
 
-            if (type === 'category') {
+            if (deleteType === 'category') {
                 await fetchCategories();
             } else {
                 await fetchSources();
@@ -275,7 +285,7 @@ const ManagementPage = () => {
                             <CategoryTable
                                 categories={categories}
                                 onEdit={(category) => handleEdit(category, 'category')}
-                                onDelete={(id) => handleDelete(id, 'category')}
+                                onDelete={(id) => handleDeleteClick(id, 'category')}
                                 onAdd={() => {
                                     setCategoryForm({ categoryName: '', categoryType: 'expense', description: '' });
                                     setEditingItem(null);
@@ -287,7 +297,7 @@ const ManagementPage = () => {
                             <SourceTable
                                 sources={sources}
                                 onEdit={(source) => handleEdit(source, 'source')}
-                                onDelete={(id) => handleDelete(id, 'source')}
+                                onDelete={(id) => handleDeleteClick(id, 'source')}
                                 onAdd={() => {
                                     setSourceForm({
                                         sourceName: '',
@@ -338,6 +348,18 @@ const ManagementPage = () => {
                         )}
                     </AnimatePresence>
                 </div>
+
+                {/* Confirmation Dialog */}
+                <ConfirmationDialog
+                    isOpen={showDeleteConfirm}
+                    onClose={() => setShowDeleteConfirm(false)}
+                    onConfirm={handleDelete}
+                    title={`Delete ${deleteType ? deleteType.charAt(0).toUpperCase() + deleteType.slice(1) : 'Item'}`}
+                    message={`Are you sure you want to delete this ${deleteType}? This action cannot be undone.`}
+                    confirmText="Delete"
+                    cancelText="Cancel"
+                    type="danger"
+                />
             </div>
         </div>
     );

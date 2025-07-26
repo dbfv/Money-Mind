@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import ConfirmationDialog from '../../../components/ConfirmationDialog';
 
 const TransactionTable = ({ transactions, isLoading, error, onEdit, onDelete }) => {
-    const handleDelete = async (transaction) => {
-        if (window.confirm('Are you sure you want to delete this transaction?')) {
-            onDelete(transaction);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [transactionToDelete, setTransactionToDelete] = useState(null);
+
+    const handleDeleteClick = (transaction) => {
+        setTransactionToDelete(transaction);
+        setShowConfirmDialog(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (transactionToDelete) {
+            onDelete(transactionToDelete);
         }
     };
 
@@ -53,7 +62,7 @@ const TransactionTable = ({ transactions, isLoading, error, onEdit, onDelete }) 
                                                 <span className="text-xs">✏️</span>
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(t)}
+                                                onClick={() => handleDeleteClick(t)}
                                                 className="inline-flex items-center px-1.5 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
                                                 title="Delete"
                                             >
@@ -67,6 +76,18 @@ const TransactionTable = ({ transactions, isLoading, error, onEdit, onDelete }) 
                     </table>
                 )}
             </div>
+
+            {/* Confirmation Dialog */}
+            <ConfirmationDialog
+                isOpen={showConfirmDialog}
+                onClose={() => setShowConfirmDialog(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Transaction"
+                message="Are you sure you want to delete this transaction? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+            />
         </motion.div>
     );
 };

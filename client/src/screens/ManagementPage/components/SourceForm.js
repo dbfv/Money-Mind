@@ -8,7 +8,8 @@ const SourceForm = ({
     onSubmit,
     onClose,
     isEditing,
-    isSubmitting = false
+    isSubmitting = false,
+    errors = {}
 }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -33,17 +34,23 @@ const SourceForm = ({
                 </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
+                {errors.submit && (
+                    <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                        {errors.submit}
+                    </div>
+                )}
                 <SourceFields
                     values={values}
                     onChange={onChange}
                     disabled={isSubmitting}
+                    errors={errors}
                 />
                 <button
                     type="submit"
                     disabled={isSubmitting}
                     className={`w-full px-4 py-2 rounded-lg text-white transition-all duration-200 ${isSubmitting
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700'
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700'
                         }`}
                 >
                     {isSubmitting ? (

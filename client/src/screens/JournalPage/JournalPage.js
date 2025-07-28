@@ -134,8 +134,8 @@ const JournalPage = () => {
             amount: transaction.amount.toString(),
             date: new Date(transaction.date).toISOString().split('T')[0],
             description: transaction.description,
-            category: transaction.category._id || transaction.category,
-            source: transaction.source._id || transaction.source,
+            category: transaction.category ? (transaction.category._id || transaction.category) : '',
+            source: transaction.source ? (transaction.source._id || transaction.source) : '',
             type: transaction.type
         });
         setEditingItem(transaction);
@@ -145,15 +145,23 @@ const JournalPage = () => {
     const handleDelete = async (transaction) => {
         try {
             const token = localStorage.getItem('token');
+            const userData = JSON.parse(localStorage.getItem('user'));
+            const userId = userData?._id;
+
+            console.log('Deleting transaction:', transaction._id);
+
             const res = await fetch(`${ENDPOINTS.TRANSACTIONS}/${transaction._id}`, {
                 method: 'DELETE',
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
-                }
+                },
+                body: JSON.stringify({ userId: userId }) // Include userId in the request body
             });
 
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({ message: 'Failed to delete transaction' }));
+                console.error('Delete transaction response:', res.status, errorData);
                 throw new Error(errorData.message || 'Failed to delete transaction');
             }
 
@@ -175,6 +183,13 @@ const JournalPage = () => {
 
         try {
             const token = localStorage.getItem('token');
+            const userData = JSON.parse(localStorage.getItem('user'));
+            const userId = userData?._id;
+
+            if (!userId) {
+                throw new Error('User ID not found. Please login again.');
+            }
+
             const url = editingItem
                 ? `${ENDPOINTS.TRANSACTIONS}/${editingItem._id}`
                 : ENDPOINTS.TRANSACTIONS;
@@ -193,30 +208,34 @@ const JournalPage = () => {
                     date: new Date(formData.date),
                     description: formData.description,
                     category: formData.category,
-                    source: formData.source
+                    source: formData.source,
+                    userId: userId
                 }),
             });
 
-            if (response.ok) {
-                // Reset form and close
-                setFormData({
-                    amount: '',
-                    date: new Date().toISOString().split('T')[0],
-                    description: '',
-                    category: '',
-                    source: ''
-                });
-                setShowForm(false);
-                setEditingItem(null);
-                // Remove the showForm parameter from URL
-                navigate('/journal');
-                fetchTransactions(); // Refetch transactions after adding/updating
-            } else {
+            if (!response.ok) {
                 const data = await response.json();
+                console.error('Transaction submission error:', data);
                 setErrors({ submit: data.message || `Failed to ${editingItem ? 'update' : 'create'} transaction` });
+                return;
             }
+
+            // Reset form and close
+            setFormData({
+                amount: '',
+                date: new Date().toISOString().split('T')[0],
+                description: '',
+                category: '',
+                source: ''
+            });
+            setShowForm(false);
+            setEditingItem(null);
+            // Remove the showForm parameter from URL
+            navigate('/journal');
+            fetchTransactions(); // Refetch transactions after adding/updating
         } catch (error) {
-            setErrors({ submit: 'Network error. Please try again.' });
+            console.error('Transaction submission error:', error);
+            setErrors({ submit: error.message || 'Network error. Please try again.' });
         } finally {
             setIsSubmitting(false);
         }
@@ -247,13 +266,12 @@ const JournalPage = () => {
                 body: JSON.stringify(categoryData)
             });
 
+            const responseData = await res.json();
             if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.message || 'Failed to create category');
+                throw new Error(responseData.message || 'Failed to create category');
             }
 
-            const newCategory = await res.json();
-            setCategories(prev => [...prev, newCategory]);
+            setCategories(prev => [...prev, responseData]);
             e.target.reset();
             setCategoryFormError(null);
         } catch (error) {

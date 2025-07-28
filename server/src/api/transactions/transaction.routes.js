@@ -10,6 +10,7 @@ const transactionRoutes = (app) => {
     app.get('/api/transactions/dashboard', auth, transactionController.getDashboardStats);
 
     app.route('/api/transactions/:id')
+        .get(auth, transactionController.getTransactionById)
         .put(auth, transactionController.updateTransaction)
         .delete(auth, transactionController.deleteTransaction);
 };

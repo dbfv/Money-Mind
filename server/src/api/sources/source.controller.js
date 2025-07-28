@@ -31,7 +31,7 @@ exports.createSource = async (req, res) => {
 // @access  Private
 exports.getSources = async (req, res) => {
   try {
-    const sources = await Source.find({ user: req.user.id });
+    const sources = await Source.find({ userId: req.user.id });
     res.json(sources);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -45,7 +45,7 @@ exports.getSourceById = async (req, res) => {
   try {
     const source = await Source.findById(req.params.id);
 
-    if (source && source.user.toString() === req.user.id) {
+    if (source && source.userId.toString() === req.user.id) {
       res.json(source);
     } else {
       res.status(404).json({ message: 'Source not found' });
@@ -81,9 +81,13 @@ exports.updateSource = async (req, res) => {
       }
     }
 
+    // Ensure userId is preserved and not overwritten
+    const updateData = { ...req.body };
+    updateData.userId = req.user.id;  // Always use the userId from the token
+
     const updatedSource = await Source.findByIdAndUpdate(
       req.params.id,
-      { ...req.body },
+      updateData,
       { new: true }
     );
     res.json(updatedSource);
@@ -112,8 +116,8 @@ exports.deleteSource = async (req, res) => {
       console.log('Source not found');
       return res.status(404).json({ message: 'Source not found' });
     }
-    console.log('Source user:', source.user.toString(), 'Request user:', req.user.id);
-    if (source.user.toString() !== req.user.id) {
+    console.log('Source userId:', source.userId.toString(), 'Request user:', req.user.id);
+    if (source.userId.toString() !== req.user.id) {
       console.log('Permission denied');
       return res.status(403).json({ message: 'Permission denied' });
     }
@@ -131,7 +135,7 @@ exports.deleteSource = async (req, res) => {
 // @access  Private
 exports.getTotalAmount = async (req, res) => {
   try {
-    const sources = await Source.find({ user: req.user.id });
+    const sources = await Source.find({ userId: req.user.id });
     const total = sources.reduce((sum, src) => sum + (src.balance || 0), 0);
     res.json({ total });
   } catch (error) {

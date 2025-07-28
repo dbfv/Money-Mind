@@ -80,10 +80,18 @@ exports.updateCategory = async (req, res) => {
             }
         }
 
-        const { name, type } = req.body;
-        category.name = name || category.name;
-        category.type = type || category.type;
-        const updatedCategory = await category.save();
+        // Update category with the received data
+        // Always ensure the userId is preserved
+        const updateData = { ...req.body };
+        updateData.userId = req.user.id; // Always use the userId from the token
+
+        // Update and return the category
+        const updatedCategory = await Category.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true }
+        );
+
         res.json(updatedCategory);
     } catch (error) {
         res.status(400).json({ message: error.message });

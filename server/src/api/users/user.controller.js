@@ -3,10 +3,8 @@ const SixJarsProfile = require('../sixJarsProfiles/sixJarsProfile.model');
 const jwt = require('jsonwebtoken');
 
 const generateToken = (id) => {
-    const secret = process.env.JWT_SECRET || 'your_super_secret_jwt_key_here_2024';
-    return jwt.sign({ id }, secret, {
-        expiresIn: '30d',
-    });
+    const secret = process.env.JWT_SECRET;
+    return jwt.sign({ id }, secret, {expiresIn: '30d',});
 };
 
 // @desc    Register a new user

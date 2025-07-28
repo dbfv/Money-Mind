@@ -47,6 +47,11 @@ exports.createTransaction = async (req, res) => {
       sourceDoc.balance += amount;
     }
 
+    // Ensure the source has a userId before saving
+    if (!sourceDoc.userId) {
+      sourceDoc.userId = req.user.id;
+    }
+
     await sourceDoc.save({ session });
 
     await session.commitTransaction();
@@ -214,36 +219,93 @@ exports.updateTransaction = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { amount, type, date, description, category, source } = req.body;
-    const transaction = await Transaction.findById(req.params.id);
+    console.log('PUT /api/transactions/:id - Update transaction request');
+    console.log('Transaction ID:', req.params.id);
+    console.log('Request body:', req.body);
 
-    if (!transaction) {
-      throw new Error('Transaction not found');
+    // Validate required fields
+    const { amount, type, date, description, category, source } = req.body;
+    if (amount === undefined || !type || !date || !category || !source) {
+      throw new Error('Missing required fields: amount, type, date, category, source are all required');
     }
 
+    // Find the transaction
+    const transaction = await Transaction.findById(req.params.id);
+    if (!transaction) {
+      console.log('Transaction not found:', req.params.id);
+      return res.status(404).json({ message: 'Transaction not found' });
+    }
+
+    console.log('Found transaction:', transaction);
+    console.log('User ID from token:', req.user.id);
+    console.log('User ID from transaction:', transaction.userId.toString());
+
     if (transaction.userId.toString() !== req.user.id) {
-      throw new Error('User not authorized');
+      console.log('User not authorized');
+      return res.status(403).json({ message: 'User not authorized' });
+    }
+
+    // Verify source and category exist
+    const sourceDoc = await Source.findById(source);
+    if (!sourceDoc) {
+      console.log('Source not found:', source);
+      return res.status(400).json({ message: 'Source not found' });
+    }
+
+    const categoryDoc = await Category.findById(category);
+    if (!categoryDoc) {
+      console.log('Category not found:', category);
+      return res.status(400).json({ message: 'Category not found' });
     }
 
     // If source is being changed or amount is different, we need to update both old and new source balances
     if (source !== transaction.source.toString() || amount !== transaction.amount) {
+      console.log('Updating source balances - old source:', transaction.source, 'new source:', source);
+      console.log('Old amount:', transaction.amount, 'New amount:', amount);
+
       // Revert the old source balance
       const oldSource = await Source.findById(transaction.source).session(session);
+      if (!oldSource) {
+        console.log('Old source not found:', transaction.source);
+        return res.status(400).json({ message: 'Original source not found' });
+      }
+
+      console.log('Old source before update:', oldSource);
       if (transaction.type === 'expense') {
         oldSource.balance += transaction.amount;
       } else {
         oldSource.balance -= transaction.amount;
       }
+
+      // Ensure the old source has a userId before saving
+      if (!oldSource.userId) {
+        oldSource.userId = req.user.id;
+      }
+
       await oldSource.save({ session });
+      console.log('Old source after update:', oldSource);
 
       // Update the new source balance
-      const newSource = await Source.findById(source || transaction.source).session(session);
+      const newSource = await Source.findById(source).session(session);
+      if (!newSource) {
+        console.log('New source not found:', source);
+        return res.status(400).json({ message: 'New source not found' });
+      }
+
+      console.log('New source before update:', newSource);
       if (type === 'expense') {
         newSource.balance -= amount;
       } else {
         newSource.balance += amount;
       }
+
+      // Ensure the new source has a userId before saving
+      if (!newSource.userId) {
+        newSource.userId = req.user.id;
+      }
+
       await newSource.save({ session });
+      console.log('New source after update:', newSource);
     }
 
     // Update the transaction
@@ -252,14 +314,18 @@ exports.updateTransaction = async (req, res) => {
     transaction.date = date;
     transaction.description = description;
     transaction.category = category;
-    transaction.source = source || transaction.source;
+    transaction.source = source;
 
+    console.log('Saving updated transaction:', transaction);
     const updatedTransaction = await transaction.save({ session });
+
     await session.commitTransaction();
     session.endSession();
 
+    console.log('Transaction updated successfully');
     res.json(updatedTransaction);
   } catch (error) {
+    console.error('Error updating transaction:', error);
     await session.abortTransaction();
     session.endSession();
     res.status(400).json({ message: error.message });
@@ -273,35 +339,83 @@ exports.deleteTransaction = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const transaction = await Transaction.findById(req.params.id);
+    console.log('DELETE /api/transactions/:id');
+    console.log('Transaction ID:', req.params.id);
+    console.log('User ID from token:', req.user.id);
 
+    const transaction = await Transaction.findById(req.params.id);
     if (!transaction) {
-      throw new Error('Transaction not found');
+      console.log('Transaction not found:', req.params.id);
+      return res.status(404).json({ message: 'Transaction not found' });
     }
 
+    console.log('Found transaction:', transaction);
+    console.log('Transaction user ID:', transaction.userId.toString());
+
     if (transaction.userId.toString() !== req.user.id) {
-      throw new Error('User not authorized');
+      console.log('User not authorized');
+      return res.status(403).json({ message: 'User not authorized' });
     }
 
     // Update source balance
     const source = await Source.findById(transaction.source).session(session);
+    if (!source) {
+      console.log('Source not found:', transaction.source);
+      return res.status(400).json({ message: 'Source not found' });
+    }
+
+    console.log('Source before update:', source);
     if (transaction.type === 'expense') {
       source.balance += transaction.amount;
     } else {
       source.balance -= transaction.amount;
     }
+
+    // Ensure the source has a userId before saving
+    if (!source.userId) {
+      source.userId = req.user.id;
+    }
+
     await source.save({ session });
+    console.log('Source after update:', source);
 
     // Delete the transaction
-    await Transaction.deleteOne({ _id: req.params.id }).session(session);
+    const deleteResult = await Transaction.deleteOne({ _id: req.params.id }).session(session);
+    console.log('Delete result:', deleteResult);
 
     await session.commitTransaction();
     session.endSession();
 
+    console.log('Transaction deleted successfully');
     res.json({ message: 'Transaction removed' });
   } catch (error) {
+    console.error('Error deleting transaction:', error);
     await session.abortTransaction();
     session.endSession();
     res.status(400).json({ message: error.message });
+  }
+};
+
+// @desc    Get transaction by ID
+// @route   GET /api/transactions/:id
+// @access  Private
+exports.getTransactionById = async (req, res) => {
+  try {
+    const transaction = await Transaction.findById(req.params.id)
+      .populate('category')
+      .populate('source');
+
+    if (!transaction) {
+      return res.status(404).json({ message: 'Transaction not found' });
+    }
+
+    // Verify the transaction belongs to the user
+    if (transaction.userId.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to access this transaction' });
+    }
+
+    res.json(transaction);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

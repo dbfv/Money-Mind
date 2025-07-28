@@ -92,7 +92,7 @@ const ManagementPage = () => {
         } else {
             setSourceForm({
                 sourceName: item.name,
-                sourceType: item.type.toLowerCase(),
+                sourceType: item.type, // Don't lowercase, keep the original type
                 balance: item.balance || 0,
                 interestRate: item.interestRate || 0,
                 paymentFrequency: item.paymentFrequency || 'monthly'
@@ -146,12 +146,17 @@ const ManagementPage = () => {
 
             const method = editingItem ? 'PUT' : 'POST';
 
+            // Get the current user ID from localStorage
+            const userData = JSON.parse(localStorage.getItem('user'));
+            const userId = userData?._id;
+
             const sourceData = {
                 name: sourceForm.sourceName.trim(),
                 type: sourceForm.sourceType,
                 balance: parseFloat(sourceForm.balance),
                 interestRate: parseFloat(sourceForm.interestRate),
-                paymentFrequency: sourceForm.paymentFrequency
+                paymentFrequency: sourceForm.paymentFrequency,
+                userId: userId // Include the userId in the request
             };
 
             const res = await fetch(url, {
@@ -202,10 +207,15 @@ const ManagementPage = () => {
 
             const method = editingItem ? 'PUT' : 'POST';
 
+            // Get the current user ID from localStorage
+            const userData = JSON.parse(localStorage.getItem('user'));
+            const userId = userData?._id;
+
             const categoryData = {
                 name: categoryForm.categoryName.trim(),
                 type: categoryForm.categoryType,
-                description: categoryForm.description
+                description: categoryForm.description,
+                userId: userId // Include the userId in the request
             };
 
             const res = await fetch(url, {

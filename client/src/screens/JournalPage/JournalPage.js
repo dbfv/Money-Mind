@@ -43,20 +43,21 @@ const JournalPage = () => {
     }, [location]);
 
     // Fetch sources
+    const fetchSources = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(ENDPOINTS.SOURCES, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('Failed to fetch sources');
+            const data = await res.json();
+            setSources(data);
+        } catch (e) {
+            setSources([]);
+        }
+    };
+
     useEffect(() => {
-        const fetchSources = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const res = await fetch(ENDPOINTS.SOURCES, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!res.ok) throw new Error('Failed to fetch sources');
-                const data = await res.json();
-                setSources(data);
-            } catch (e) {
-                setSources([]);
-            }
-        };
         fetchSources();
     }, []);
 
@@ -167,6 +168,7 @@ const JournalPage = () => {
 
             // Only update the UI if the delete was successful
             await fetchTransactions();
+            await fetchSources(); // Also refresh sources to show updated balances
             setError(null); // Clear any previous errors
         } catch (error) {
             setError(error.message);
@@ -232,7 +234,8 @@ const JournalPage = () => {
             setEditingItem(null);
             // Remove the showForm parameter from URL
             navigate('/journal');
-            fetchTransactions(); // Refetch transactions after adding/updating
+            await fetchTransactions(); // Refetch transactions after adding/updating
+            await fetchSources(); // Also refresh sources to show updated balances
         } catch (error) {
             console.error('Transaction submission error:', error);
             setErrors({ submit: error.message || 'Network error. Please try again.' });

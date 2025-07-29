@@ -5,6 +5,7 @@ server/node_modules/
 
 # Files
 spec.txt
+spec.md
 
 # Logs
 npm-debug.log*

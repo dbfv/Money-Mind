@@ -9,6 +9,7 @@ const transactionRoutes = require('./api/transactions/transaction.routes');
 const economicAssumptionRoutes = require('./api/economicAssumptions/economicAssumption.routes');
 const sixJarsProfileRoutes = require('./api/sixJarsProfiles/sixJarsProfile.routes');
 const categoryRoutes = require('./api/categories/category.routes');
+const calendarEventRoutes = require('./api/calendarEvents/calendarEvent.routes');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -41,6 +42,7 @@ transactionRoutes(app);
 economicAssumptionRoutes(app);
 sixJarsProfileRoutes(app);
 categoryRoutes(app);
+calendarEventRoutes(app);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

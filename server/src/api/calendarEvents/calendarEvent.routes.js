@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../../../middleware/auth');
+const auth = require('../../middleware/auth');
 const {
     getEvents,
     createEvent,
@@ -8,19 +8,17 @@ const {
     deleteEvent
 } = require('./calendarEvent.controller');
 
-// All routes require authentication
-router.use(auth);
+// Define calendar event routes
+const calendarEventRoutes = (app) => {
+    // Base route
+    app.route('/api/calendar-events')
+        .get(auth, getEvents)
+        .post(auth, createEvent);
 
-// Get all events for the logged-in user
-router.get('/', getEvents);
+    // Routes with parameters
+    app.route('/api/calendar-events/:id')
+        .put(auth, updateEvent)
+        .delete(auth, deleteEvent);
+};
 
-// Create a new event
-router.post('/', createEvent);
-
-// Update an event
-router.put('/:id', updateEvent);
-
-// Delete an event
-router.delete('/:id', deleteEvent);
-
-module.exports = router;
+module.exports = calendarEventRoutes;

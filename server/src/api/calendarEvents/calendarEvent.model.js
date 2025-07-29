@@ -12,24 +12,50 @@ const calendarEventSchema = new Schema({
     required: true,
     trim: true,
   },
+  description: {
+    type: String,
+    trim: true,
+  },
   amount: {
     type: Number,
-    required: true,
+    default: 0,
   },
   type: {
     type: String,
     required: true,
-    enum: ['bill', 'income', 'reminder', 'predicted_expense'],
+    enum: ['expense', 'income', 'reminder', 'prediction'],
+  },
+  isRecurring: {
+    type: Boolean,
+    default: false,
   },
   frequency: {
     type: String,
-    enum: ['once', 'daily', 'weekly', 'bi-weekly', 'monthly', 'yearly'],
+    enum: ['once', 'daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'annually'],
     default: 'once',
   },
   startDate: {
     type: Date,
     required: true,
   },
+  endDate: {
+    type: Date,
+  },
+  color: {
+    type: String,
+  },
+  isCompleted: {
+    type: Boolean,
+    default: false,
+  },
+  category: {
+    type: Schema.Types.ObjectId,
+    ref: 'Category',
+  },
+  source: {
+    type: Schema.Types.ObjectId,
+    ref: 'Source',
+  }
 }, {
   timestamps: true,
 });

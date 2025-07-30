@@ -42,18 +42,78 @@ const CalendarPage = () => {
         prediction: '#8b5cf6'
     };
 
-    // Fetch data on component mount
+    // Fetch data on component mount and when month changes
     useEffect(() => {
-        fetchCalendarData();
-        fetchTransactions();
-    }, [currentMonth]);
+        const loadData = async () => {
+            setIsLoading(true);
+            try {
+                // Get token
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Not authenticated');
+                }
 
-    // Refresh the events when transactions change
-    useEffect(() => {
-        if (transactions.length > 0) {
-            updateEventsWithTransactions([]);
-        }
-    }, [transactions]);
+                // Get date range for the month
+                const { startDate, endDate } = getMonthDateRange(currentMonth);
+                const start = startDate.toISOString().split('T')[0];
+                const end = endDate.toISOString().split('T')[0];
+
+                // Fetch calendar events
+                const eventsUrl = `${ENDPOINTS.CALENDAR_EVENTS}?startDate=${start}&endDate=${end}`;
+                const eventsResponse = await fetch(eventsUrl, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!eventsResponse.ok) {
+                    const errorData = await eventsResponse.json();
+                    throw new Error(errorData.message || 'Failed to fetch calendar events');
+                }
+
+                const eventsData = await eventsResponse.json();
+                console.log('Calendar events loaded:', eventsData.length);
+
+                // Fetch transactions
+                const transactionsResponse = await fetch(ENDPOINTS.TRANSACTIONS, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!transactionsResponse.ok) {
+                    const errorData = await transactionsResponse.json();
+                    throw new Error(errorData.message || 'Failed to fetch transactions');
+                }
+
+                const transactionsData = await transactionsResponse.json();
+                console.log('Transactions loaded:', transactionsData.length);
+
+                // Update state
+                setTransactions(transactionsData);
+
+                // Combine events and transactions
+                const transactionEvents = transactionsData.map(transaction => ({
+                    _id: `transaction-${transaction._id}`,
+                    title: transaction.description || 'Transaction',
+                    description: transaction.description || '',
+                    type: transaction.type || 'expense',
+                    amount: transaction.amount || 0,
+                    startDate: transaction.date,
+                    category: transaction.category,
+                    source: transaction.source,
+                    isTransaction: true
+                }));
+
+                const allEvents = [...eventsData, ...transactionEvents];
+                console.log('Combined events total:', allEvents.length);
+                setEvents(allEvents);
+            } catch (err) {
+                console.error('Error loading data:', err);
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadData();
+    }, [currentMonth]);
 
     // Fetch categories and sources once
     useEffect(() => {
@@ -96,8 +156,12 @@ const CalendarPage = () => {
             }
 
             const data = await response.json();
+            console.log('Calendar events loaded:', data.length);
 
-            // Combine calendar events with transactions
+            // First update with just calendar events
+            setEvents(data);
+
+            // Then update with transactions
             updateEventsWithTransactions(data);
         } catch (err) {
             console.error('Error fetching calendar data:', err);
@@ -126,9 +190,10 @@ const CalendarPage = () => {
             }
 
             const data = await response.json();
+            console.log('Transactions loaded:', data.length);
             setTransactions(data);
 
-            // Update events with the new transactions
+            // Get existing calendar events and update with transactions
             updateEventsWithTransactions(events);
         } catch (err) {
             console.error('Error fetching transactions:', err);
@@ -140,9 +205,10 @@ const CalendarPage = () => {
         // Convert transactions to calendar event format
         const transactionEvents = transactions.map(transaction => ({
             _id: `transaction-${transaction._id}`,
-            title: transaction.description,
-            type: transaction.type,
-            amount: transaction.amount,
+            title: transaction.description || 'Transaction',
+            description: transaction.description || '',
+            type: transaction.type || 'expense',
+            amount: transaction.amount || 0,
             startDate: transaction.date,
             category: transaction.category,
             source: transaction.source,
@@ -152,8 +218,13 @@ const CalendarPage = () => {
         // Make sure calendarEvents is an array (handle empty case)
         const eventsArray = Array.isArray(calendarEvents) ? calendarEvents : [];
 
+        // Log for debugging
+        console.log(`Combining ${eventsArray.length} calendar events with ${transactionEvents.length} transactions`);
+
         // Combine and set events
-        setEvents([...eventsArray, ...transactionEvents]);
+        const combinedEvents = [...eventsArray, ...transactionEvents];
+        setEvents(combinedEvents);
+        console.log('Combined events:', combinedEvents.length);
     };
 
     // Fetch categories
@@ -346,6 +417,17 @@ const CalendarPage = () => {
         setNewEvent(createNewEvent(selectedDate));
     };
 
+    // Navigation handlers
+    const handlePrevMonth = () => {
+        console.log('Navigating to previous month');
+        setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+    };
+
+    const handleNextMonth = () => {
+        console.log('Navigating to next month');
+        setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+    };
+
     // Animation variants
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -390,6 +472,12 @@ const CalendarPage = () => {
                     initial="hidden"
                     animate="visible"
                 >
+                    {/* Debug info */}
+                    {process.env.NODE_ENV === 'development' && (
+                        <div className="mb-2 text-xs text-gray-500">
+                            Events: {events.length} | Transactions: {transactions.length} | Month: {currentMonth.toLocaleDateString()}
+                        </div>
+                    )}
                     {/* Header */}
                     <motion.div className="mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4" variants={itemVariants}>
                         <div>
@@ -467,8 +555,8 @@ const CalendarPage = () => {
                             eventColors={eventColors}
                             onDateClick={handleDateClick}
                             onEventClick={handleEventClick}
-                            onNextMonth={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}
-                            onPrevMonth={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}
+                            onNextMonth={handleNextMonth}
+                            onPrevMonth={handlePrevMonth}
                         />
                     </motion.div>
                 </motion.div>

@@ -149,6 +149,9 @@ const Calendar = ({
         const startDate = new Date(monthStart);
         const startDay = startDate.getDay();
 
+        // For debugging
+        console.log(`Rendering calendar for ${monthStart.toLocaleDateString()} with ${events?.length || 0} events`);
+
         // Adjust to start from the first day of week (Sunday)
         startDate.setDate(startDate.getDate() - startDay);
 
@@ -165,7 +168,18 @@ const Calendar = ({
 
                 // Get events for this day
                 const dayEvents = events.filter(event => {
+                    // Handle both date formats
+                    if (!event.startDate && !event.date) {
+                        return false;
+                    }
+
                     const eventDate = new Date(event.startDate || event.date);
+
+                    // Make sure the date is valid
+                    if (isNaN(eventDate.getTime())) {
+                        return false;
+                    }
+
                     return isSameDay(eventDate, day);
                 });
 

@@ -95,6 +95,8 @@ const Calendar = ({
         const totalAmount = income - expenses;
 
         return {
+            income,
+            expenses,
             totalAmount,
             hasTransactions: income > 0 || expenses > 0
         };
@@ -217,16 +219,16 @@ const Calendar = ({
                         {renderEventMarkers(dayEvents)}
 
                         {/* Transaction summary - positioned at bottom of card */}
-                        {totals.hasTransactions && (
-                            <div className="mt-auto pt-1 border-t border-gray-200 w-full">
-                                <div className="text-center text-sm font-medium">
-                                    {totals.totalAmount < 0 ?
-                                        <span className="text-red-600">-${Math.abs(totals.totalAmount).toFixed(2)}</span> :
-                                        <span className="text-green-600">+${totals.totalAmount.toFixed(2)}</span>
-                                    }
-                                </div>
+                        <div className="mt-auto pt-1 border-t border-gray-200 w-full">
+                            <div className="text-center text-sm font-medium">
+                                {totals.totalAmount < 0 ?
+                                    <span className="text-red-600">-${Math.abs(totals.totalAmount).toFixed(2)}</span> :
+                                    totals.totalAmount > 0 ?
+                                        <span className="text-green-600">+${totals.totalAmount.toFixed(2)}</span> :
+                                        <span className="text-gray-500">$0.00</span>
+                                }
                             </div>
-                        )}
+                        </div>
                     </motion.div>
                 );
 

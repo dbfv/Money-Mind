@@ -42,7 +42,7 @@ const CalendarPage = () => {
         prediction: '#8b5cf6'
     };
 
-    // Fetch data on component mount and when month changes
+    // Refactor useEffect to better handle data loading
     useEffect(() => {
         const loadData = async () => {
             setIsLoading(true);
@@ -85,10 +85,11 @@ const CalendarPage = () => {
                 const transactionsData = await transactionsResponse.json();
                 console.log('Transactions loaded:', transactionsData.length);
 
-                // Update state
+                // Update transactions state
                 setTransactions(transactionsData);
 
-                // Combine events and transactions
+                // Now combine calendar events with transactions
+                // Convert transactions to calendar event format
                 const transactionEvents = transactionsData.map(transaction => ({
                     _id: `transaction-${transaction._id}`,
                     title: transaction.description || 'Transaction',
@@ -101,6 +102,7 @@ const CalendarPage = () => {
                     isTransaction: true
                 }));
 
+                // Combine and set events
                 const allEvents = [...eventsData, ...transactionEvents];
                 console.log('Combined events total:', allEvents.length);
                 setEvents(allEvents);
@@ -128,6 +130,37 @@ const CalendarPage = () => {
         const firstDay = new Date(year, month - 1, 1); // Previous month for padding
         const lastDay = new Date(year, month + 2, 0);  // Next month for padding
         return { startDate: firstDay, endDate: lastDay };
+    };
+
+    // Combine calendar events with transactions
+    const updateEventsWithTransactions = (calendarEvents) => {
+        try {
+            // Convert transactions to calendar event format
+            const transactionEvents = transactions.map(transaction => ({
+                _id: `transaction-${transaction._id}`,
+                title: transaction.description || 'Transaction',
+                description: transaction.description || '',
+                type: transaction.type || 'expense',
+                amount: transaction.amount || 0,
+                startDate: transaction.date,
+                category: transaction.category,
+                source: transaction.source,
+                isTransaction: true
+            }));
+
+            // Make sure calendarEvents is an array (handle empty case)
+            const eventsArray = Array.isArray(calendarEvents) ? calendarEvents : [];
+
+            // Log for debugging
+            console.log(`Combining ${eventsArray.length} calendar events with ${transactionEvents.length} transactions`);
+
+            // Combine and set events
+            const combinedEvents = [...eventsArray, ...transactionEvents];
+            setEvents(combinedEvents);
+            console.log('Combined events:', combinedEvents.length);
+        } catch (err) {
+            console.error('Error combining events:', err);
+        }
     };
 
     // Fetch calendar events
@@ -158,10 +191,8 @@ const CalendarPage = () => {
             const data = await response.json();
             console.log('Calendar events loaded:', data.length);
 
-            // First update with just calendar events
-            setEvents(data);
-
-            // Then update with transactions
+            // Update with just the calendar events first
+            // then combine with transactions in the updateEventsWithTransactions function
             updateEventsWithTransactions(data);
         } catch (err) {
             console.error('Error fetching calendar data:', err);
@@ -198,33 +229,6 @@ const CalendarPage = () => {
         } catch (err) {
             console.error('Error fetching transactions:', err);
         }
-    };
-
-    // Combine calendar events with transactions
-    const updateEventsWithTransactions = (calendarEvents) => {
-        // Convert transactions to calendar event format
-        const transactionEvents = transactions.map(transaction => ({
-            _id: `transaction-${transaction._id}`,
-            title: transaction.description || 'Transaction',
-            description: transaction.description || '',
-            type: transaction.type || 'expense',
-            amount: transaction.amount || 0,
-            startDate: transaction.date,
-            category: transaction.category,
-            source: transaction.source,
-            isTransaction: true
-        }));
-
-        // Make sure calendarEvents is an array (handle empty case)
-        const eventsArray = Array.isArray(calendarEvents) ? calendarEvents : [];
-
-        // Log for debugging
-        console.log(`Combining ${eventsArray.length} calendar events with ${transactionEvents.length} transactions`);
-
-        // Combine and set events
-        const combinedEvents = [...eventsArray, ...transactionEvents];
-        setEvents(combinedEvents);
-        console.log('Combined events:', combinedEvents.length);
     };
 
     // Fetch categories
@@ -276,6 +280,7 @@ const CalendarPage = () => {
         );
     };
 
+    // Handler for clicking on a date in the calendar
     const handleDateClick = (day) => {
         setSelectedDate(day);
         const formattedDate = formatDate(day);
@@ -288,8 +293,16 @@ const CalendarPage = () => {
         );
         setDayTransactions(dayTransactions);
 
+        // Get events for the selected day (filtering out transactions which are already handled)
+        const dayEvents = events.filter(event =>
+            !event.isTransaction && isSameDay(new Date(event.startDate || event.date), day)
+        );
+
         // Open the day details modal instead of just the event form
         setShowDayDetailsModal(true);
+
+        // Log for debugging
+        console.log(`Selected day ${formattedDate} with ${dayTransactions.length} transactions and ${dayEvents.length} events`);
     };
 
     const handleEventClick = (event) => {
@@ -362,8 +375,12 @@ const CalendarPage = () => {
                 throw new Error(errorData.message || 'Failed to save event');
             }
 
-            // Refresh calendar data
+            // First fetch calendar data to get updated events
             await fetchCalendarData();
+
+            // Also fetch transactions to ensure we have the latest data
+            await fetchTransactions();
+
             closeModal();
         } catch (err) {
             console.error('Error saving event:', err);
@@ -399,8 +416,12 @@ const CalendarPage = () => {
                 throw new Error(errorData.message || 'Failed to delete event');
             }
 
-            // Refresh calendar data
+            // First fetch calendar data to get updated events
             await fetchCalendarData();
+
+            // Also fetch transactions to ensure we have the latest data
+            await fetchTransactions();
+
             closeModal();
             setShowDeleteConfirm(false);
         } catch (err) {
@@ -583,6 +604,9 @@ const CalendarPage = () => {
                     onClose={closeModal}
                     date={selectedDate}
                     transactions={dayTransactions}
+                    events={events.filter(event =>
+                        !event.isTransaction && isSameDay(new Date(event.startDate || event.date), selectedDate)
+                    )}
                     event={newEvent}
                     onChange={handleInputChange}
                     onSubmit={handleSubmit}

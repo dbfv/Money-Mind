@@ -25,7 +25,8 @@ const TransactionForm = ({
     handleInputChange,
     handleSubmit,
     categories,
-    sources
+    sources,
+    getSourceBalanceInfo
 }) => {
     return (
         <AnimatePresence>
@@ -125,16 +126,19 @@ const TransactionForm = ({
                                 </div>
 
                                 {/* Source */}
-                                <Dropdown
-                                    label="Source"
-                                    name="source"
-                                    value={formData.source}
-                                    onChange={handleInputChange}
-                                    options={sources.map(s => ({ value: s._id, label: s.name }))}
-                                    error={errors.source}
-                                    placeholder="Select a source"
-                                    required
-                                />
+                                <div className="space-y-1">
+                                    <Dropdown
+                                        label="Source"
+                                        name="source"
+                                        value={formData.source}
+                                        onChange={handleInputChange}
+                                        options={sources.map(s => ({ value: s._id, label: s.name }))}
+                                        error={errors.source}
+                                        placeholder="Select a source"
+                                        required
+                                    />
+                                    {getSourceBalanceInfo && getSourceBalanceInfo()}
+                                </div>
 
                                 {/* Submit Error */}
                                 {errors.submit && (

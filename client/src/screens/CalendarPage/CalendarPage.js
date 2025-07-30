@@ -20,6 +20,11 @@ const CalendarPage = () => {
     const [showDayDetailsModal, setShowDayDetailsModal] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [monthlySummary, setMonthlySummary] = useState({
+        income: 0,
+        expenses: 0,
+        net: 0
+    });
 
     // Create a new event object
     const createNewEvent = (date) => ({
@@ -87,6 +92,9 @@ const CalendarPage = () => {
 
                 // Update transactions state
                 setTransactions(transactionsData);
+
+                // Calculate monthly summary
+                calculateMonthlySummary(transactionsData);
 
                 // Now combine calendar events with transactions
                 // Convert transactions to calendar event format
@@ -202,7 +210,7 @@ const CalendarPage = () => {
         }
     };
 
-    // Fetch transactions
+    // Update fetchTransactions to also update the monthly summary
     const fetchTransactions = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -223,6 +231,9 @@ const CalendarPage = () => {
             const data = await response.json();
             console.log('Transactions loaded:', data.length);
             setTransactions(data);
+
+            // Update monthly summary when transactions are fetched
+            calculateMonthlySummary(data);
 
             // Get existing calendar events and update with transactions
             updateEventsWithTransactions(events);
@@ -381,6 +392,9 @@ const CalendarPage = () => {
             // Also fetch transactions to ensure we have the latest data
             await fetchTransactions();
 
+            // Recalculate monthly summary with the latest transactions
+            calculateMonthlySummary(transactions);
+
             closeModal();
         } catch (err) {
             console.error('Error saving event:', err);
@@ -421,6 +435,9 @@ const CalendarPage = () => {
 
             // Also fetch transactions to ensure we have the latest data
             await fetchTransactions();
+
+            // Recalculate monthly summary with the latest transactions
+            calculateMonthlySummary(transactions);
 
             closeModal();
             setShowDeleteConfirm(false);
@@ -468,6 +485,39 @@ const CalendarPage = () => {
             y: 0,
             transition: { duration: 0.5 }
         }
+    };
+
+    // Calculate monthly summary from transactions
+    const calculateMonthlySummary = (transactionsData) => {
+        // First, filter transactions for the current month
+        const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const lastDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+
+        const monthTransactions = transactionsData.filter(transaction => {
+            const transactionDate = new Date(transaction.date);
+            return transactionDate >= firstDayOfMonth && transactionDate <= lastDayOfMonth;
+        });
+
+        // Calculate totals
+        let totalIncome = 0;
+        let totalExpenses = 0;
+
+        monthTransactions.forEach(transaction => {
+            const amount = parseFloat(transaction.amount || 0);
+            if (transaction.type === 'income') {
+                totalIncome += amount;
+            } else if (transaction.type === 'expense') {
+                totalExpenses += amount;
+            }
+        });
+
+        const netAmount = totalIncome - totalExpenses;
+
+        setMonthlySummary({
+            income: totalIncome,
+            expenses: totalExpenses,
+            net: netAmount
+        });
     };
 
     if (isLoading && events.length === 0) {
@@ -559,6 +609,33 @@ const CalendarPage = () => {
                         <div className="flex items-center">
                             <div className="w-4 h-4 mr-2 rounded border border-gray-400"></div>
                             <span className="text-sm text-gray-600">Transactions</span>
+                        </div>
+                    </motion.div>
+
+                    {/* Month Summary */}
+                    <motion.div variants={itemVariants} className="mb-6">
+                        <div className="bg-white rounded-xl p-4 shadow-md border border-gray-200">
+                            <h2 className="text-lg font-semibold text-gray-800 mb-3">Monthly Summary</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+                                    <div className="text-sm text-gray-600">Total Income</div>
+                                    <div className="text-xl font-bold text-green-600">
+                                        +${monthlySummary.income.toFixed(2)}
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-red-50 rounded-lg border border-red-100">
+                                    <div className="text-sm text-gray-600">Total Expenses</div>
+                                    <div className="text-xl font-bold text-red-600">
+                                        -${monthlySummary.expenses.toFixed(2)}
+                                    </div>
+                                </div>
+                                <div className={`p-4 ${monthlySummary.net >= 0 ? 'bg-blue-50 border-blue-100' : 'bg-yellow-50 border-yellow-100'} rounded-lg border`}>
+                                    <div className="text-sm text-gray-600">Net Balance</div>
+                                    <div className={`text-xl font-bold ${monthlySummary.net >= 0 ? 'text-blue-600' : 'text-yellow-600'}`}>
+                                        {monthlySummary.net >= 0 ? '+' : '-'}${Math.abs(monthlySummary.net).toFixed(2)}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
 

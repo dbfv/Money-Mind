@@ -41,6 +41,11 @@ exports.createTransaction = async (req, res) => {
       throw new Error('Source not found');
     }
 
+    // Check if the expense would cause a negative balance
+    if (type === 'expense' && sourceDoc.balance < amount) {
+      throw new Error(`Insufficient funds in ${sourceDoc.name}. Current balance: $${sourceDoc.balance.toFixed(2)}`);
+    }
+
     if (type === 'expense') {
       sourceDoc.balance -= amount;
     } else if (type === 'income') {
@@ -290,6 +295,11 @@ exports.updateTransaction = async (req, res) => {
       if (!newSource) {
         console.log('New source not found:', source);
         return res.status(400).json({ message: 'New source not found' });
+      }
+
+      // Check if the expense would cause a negative balance
+      if (type === 'expense' && newSource.balance < amount) {
+        throw new Error(`Insufficient funds in ${newSource.name}. Current balance: $${newSource.balance.toFixed(2)}`);
       }
 
       console.log('New source before update:', newSource);

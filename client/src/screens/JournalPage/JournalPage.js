@@ -126,6 +126,19 @@ const JournalPage = () => {
         if (!formData.category) newErrors.category = 'Category is required';
         if (!formData.source) newErrors.source = 'Source is required';
 
+        // Check if this is an expense and if there's enough balance in the source
+        const selectedCategory = categories.find(c => c._id === formData.category);
+        const selectedSource = sources.find(s => s._id === formData.source);
+
+        if (selectedCategory && selectedSource && selectedCategory.type === 'expense') {
+            const amount = parseFloat(formData.amount);
+
+            // Check if creating a new expense would exceed source balance
+            if (selectedSource.balance < amount) {
+                newErrors.amount = `Insufficient funds in ${selectedSource.name}. Available: $${selectedSource.balance.toFixed(2)}`;
+            }
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -324,6 +337,31 @@ const JournalPage = () => {
         }
     };
 
+    // Add a helper function to show source balance information
+    const getSourceBalanceInfo = () => {
+        if (!formData.source) return null;
+
+        const selectedSource = sources.find(s => s._id === formData.source);
+        if (!selectedSource) return null;
+
+        const selectedCategory = categories.find(c => c._id === formData.category);
+        const isExpense = selectedCategory?.type === 'expense';
+
+        return (
+            <div className="mt-1 text-sm">
+                {isExpense ? (
+                    <span className="text-blue-600">
+                        Available balance: ${selectedSource.balance.toFixed(2)}
+                    </span>
+                ) : (
+                    <span className="text-gray-500">
+                        Current balance: ${selectedSource.balance.toFixed(2)}
+                    </span>
+                )}
+            </div>
+        );
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 pt-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -386,6 +424,7 @@ const JournalPage = () => {
                     handleSubmit={handleSubmit}
                     categories={categories}
                     sources={sources}
+                    getSourceBalanceInfo={getSourceBalanceInfo} // Pass the helper function
                 />
             </div>
 

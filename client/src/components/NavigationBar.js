@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Dropdown from './Dropdown';
+import { ENDPOINTS } from '../config/api';
+import EventEmitter, { APP_EVENTS } from '../utils/events';
 
 const NavigationBar = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [userAvatar, setUserAvatar] = useState('');
+    const [userName, setUserName] = useState('');
 
     const navItems = [
         { name: 'Dashboard', path: '/dashboard', icon: '📊' },
@@ -14,6 +18,42 @@ const NavigationBar = () => {
         { name: 'Calendar', path: '/calendar', icon: '📅' },
         { name: 'Investments', path: '/investments', icon: '📈' },
     ];
+
+    // Fetch user profile data including avatar
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
+
+                const response = await fetch(ENDPOINTS.USER_PROFILE, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserAvatar(data.avatar || '');
+                    setUserName(data.name || '');
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+
+        fetchUserData();
+
+        // Subscribe to avatar update events
+        const unsubscribe = EventEmitter.on(APP_EVENTS.AVATAR_UPDATED, (avatarUrl) => {
+            setUserAvatar(avatarUrl);
+        });
+
+        // Clean up the subscription when the component unmounts
+        return () => {
+            unsubscribe();
+        };
+    }, []);
 
     const isActive = (path) => {
         return location.pathname === path;
@@ -57,6 +97,25 @@ const NavigationBar = () => {
             transition: { duration: 0.2 }
         },
         tap: { scale: 0.95 }
+    };
+
+    // Generate the avatar component
+    const renderAvatar = () => {
+        if (userAvatar) {
+            return (
+                <img
+                    src={userAvatar}
+                    alt={`${userName}'s avatar`}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
+                />
+            );
+        }
+
+        return (
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-lg font-medium">
+                {userName ? userName.charAt(0).toUpperCase() : "👤"}
+            </div>
+        );
     };
 
     return (
@@ -119,11 +178,7 @@ const NavigationBar = () => {
                                 value={''}
                                 onChange={handleProfileChange}
                                 options={profileOptions}
-                                placeholder={
-                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-lg font-medium">
-                                        👤
-                                    </div>
-                                }
+                                placeholder={renderAvatar()}
                                 className=""
                                 borderless={true}
                             />

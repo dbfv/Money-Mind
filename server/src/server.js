@@ -18,16 +18,11 @@ const port = process.env.PORT || 5000;
 connectDB();
 
 // Middleware
-const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    process.env.CLIENT_URL
-  ].filter(Boolean),
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
-app.use(cors(corsOptions));
+  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+}));
 app.use(express.json());
 
 // Root route

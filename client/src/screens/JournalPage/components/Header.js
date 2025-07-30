@@ -16,7 +16,7 @@ const Header = ({ onAddTransaction }) => {
                     className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate('/manage')}
+                    onClick={() => navigate('/category-management')}
                 >
                     <span className="text-xl">⚙️</span>
                     <span>Manage</span>

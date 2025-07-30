@@ -23,18 +23,38 @@ const userSchema = new Schema({
     type: Number,
     required: [true, 'Age is required'],
   },
+  avatar: {
+    type: String,
+    default: '', // Default empty string, will be populated with Cloudinary URL
+  },
   investmentProfile: {
     riskTolerance: {
       type: Number,
-      min: [1, 'Risk tolerance must be at least 1'],
-      max: [100, 'Risk tolerance cannot exceed 100'],
+      min: 1,
+      max: 100,
       default: 50,
+      required: true,
     },
     monthlyInvestableIncome: {
       type: Number,
       default: 0,
     },
+    aiSuggestedIncome: {
+      type: Number,
+      default: null,
+    },
+    economicAssumptions: {
+      inflationRate: {
+        type: Number,
+        default: 2.5, // Default inflation rate of 2.5%
+      },
+      bankInterestRate: {
+        type: Number,
+        default: 1.0, // Default bank interest rate of 1.0%
+      }
+    }
   },
+  // This reference will be removed in future updates as per spec.md
   sixJarsProfileId: {
     type: Schema.Types.ObjectId,
     ref: 'SixJarsProfile',

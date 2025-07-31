@@ -181,16 +181,32 @@ const EventForm = ({
             </div>
 
             {event.isRecurring && (
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <Dropdown
-                            label="Frequency*"
-                            name="frequency"
-                            value={event.frequency || 'monthly'}
-                            onChange={onChange}
-                            options={frequencyOptions}
-                            required={event.isRecurring}
-                        />
+                <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <Dropdown
+                                label="Frequency*"
+                                name="frequency"
+                                value={event.frequency || 'monthly'}
+                                onChange={onChange}
+                                options={frequencyOptions}
+                                required={event.isRecurring}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Number of Times
+                            </label>
+                            <input
+                                type="number"
+                                name="recurrenceCount"
+                                value={event.recurrenceCount || ''}
+                                onChange={onChange}
+                                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 border-gray-300"
+                                placeholder="Leave empty for infinite"
+                                min="1"
+                            />
+                        </div>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">

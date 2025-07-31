@@ -164,8 +164,8 @@ const NavigationBar = () => {
                         ))}
                     </div>
 
-                    {/* Profile/Settings */}
-                    <div className="flex items-center space-x-4">
+                    {/* Profile/Settings - Hidden on mobile */}
+                    <div className="hidden md:flex items-center space-x-4">
                         {/* Notifications */}
                         <motion.button
                             className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200"
@@ -215,6 +215,16 @@ const NavigationBar = () => {
                         className="md:hidden absolute top-16 left-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
                     >
                         <div className="p-4 space-y-2">
+                            {/* User Info Section */}
+                            <div className="flex items-center space-x-3 pb-3 border-b border-gray-200">
+                                {renderAvatar()}
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-gray-900">{userName || 'User'}</p>
+                                    <p className="text-xs text-gray-500">Manage your account</p>
+                                </div>
+                            </div>
+
+                            {/* Navigation Items */}
                             {navItems.map((item) => (
                                 <Link
                                     key={item.path}
@@ -230,6 +240,8 @@ const NavigationBar = () => {
                                     {item.name}
                                 </Link>
                             ))}
+                            
+                            {/* Account Actions */}
                             <div className="border-t border-gray-200 pt-2 mt-2">
                                 <Link
                                     to="/profile"
@@ -237,7 +249,7 @@ const NavigationBar = () => {
                                     className="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200"
                                 >
                                     <span className="mr-2">👤</span>
-                                    Profile
+                                    My Profile
                                 </Link>
                                 <Link
                                     to="/settings"
@@ -247,6 +259,13 @@ const NavigationBar = () => {
                                     <span className="mr-2">⚙️</span>
                                     Settings
                                 </Link>
+                                <button
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200"
+                                >
+                                    <span className="mr-2">🔔</span>
+                                    Notifications
+                                </button>
                                 <button
                                     onClick={() => {
                                         setIsMobileMenuOpen(false);

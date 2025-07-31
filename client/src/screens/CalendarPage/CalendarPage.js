@@ -93,8 +93,8 @@ const CalendarPage = () => {
                 // Update transactions state
                 setTransactions(transactionsData);
 
-                // Calculate monthly summary
-                calculateMonthlySummary(transactionsData);
+                // Fetch monthly summary from backend API (same as Dashboard)
+                fetchMonthlySummary();
 
                 // Now combine calendar events with transactions
                 // Convert transactions to calendar event format
@@ -233,7 +233,7 @@ const CalendarPage = () => {
             setTransactions(data);
 
             // Update monthly summary when transactions are fetched
-            calculateMonthlySummary(data);
+            fetchMonthlySummary();
 
             // Get existing calendar events and update with transactions
             updateEventsWithTransactions(events);
@@ -393,7 +393,7 @@ const CalendarPage = () => {
             await fetchTransactions();
 
             // Recalculate monthly summary with the latest transactions
-            calculateMonthlySummary(transactions);
+            fetchMonthlySummary();
 
             closeModal();
         } catch (err) {
@@ -437,7 +437,7 @@ const CalendarPage = () => {
             await fetchTransactions();
 
             // Recalculate monthly summary with the latest transactions
-            calculateMonthlySummary(transactions);
+            fetchMonthlySummary();
 
             closeModal();
             setShowDeleteConfirm(false);
@@ -487,37 +487,29 @@ const CalendarPage = () => {
         }
     };
 
-    // Calculate monthly summary from transactions
-    const calculateMonthlySummary = (transactionsData) => {
-        // First, filter transactions for the current month
-        const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-        const lastDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+    // Fetch monthly summary from backend API (same as Dashboard)
+    const fetchMonthlySummary = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
 
-        const monthTransactions = transactionsData.filter(transaction => {
-            const transactionDate = new Date(transaction.date);
-            return transactionDate >= firstDayOfMonth && transactionDate <= lastDayOfMonth;
-        });
+            const response = await fetch(ENDPOINTS.DASHBOARD, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
-        // Calculate totals
-        let totalIncome = 0;
-        let totalExpenses = 0;
-
-        monthTransactions.forEach(transaction => {
-            const amount = parseFloat(transaction.amount || 0);
-            if (transaction.type === 'income') {
-                totalIncome += amount;
-            } else if (transaction.type === 'expense') {
-                totalExpenses += amount;
+            if (response.ok) {
+                const data = await response.json();
+                setMonthlySummary({
+                    income: data.financialSummary.income || 0,
+                    expenses: data.financialSummary.spending || 0,
+                    net: data.financialSummary.netFlow || 0
+                });
             }
-        });
-
-        const netAmount = totalIncome - totalExpenses;
-
-        setMonthlySummary({
-            income: totalIncome,
-            expenses: totalExpenses,
-            net: netAmount
-        });
+        } catch (error) {
+            console.error('Error fetching monthly summary:', error);
+        }
     };
 
     if (isLoading && events.length === 0) {

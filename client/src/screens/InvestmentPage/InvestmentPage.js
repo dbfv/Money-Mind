@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ProfileForm from './components/ProfileForm';
 import AllocationChart from './components/AllocationChart';
 import RecommendationPanel from './components/RecommendationPanel';
 import ProjectionChart from './components/ProjectionChart';
 import Disclaimer from './components/Disclaimer';
+import InvestmentSuggestions from './components/InvestmentSuggestions';
+import ChatIcon from '../../components/ChatIcon';
 
 const InvestmentPage = () => {
     const [step, setStep] = useState(1);
@@ -22,6 +24,20 @@ const InvestmentPage = () => {
     });
     const [recommendation, setRecommendation] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [userId, setUserId] = useState(null);
+
+    // Get user ID from localStorage
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setUserId(payload.userId);
+            } catch (error) {
+                console.error('Error parsing token:', error);
+            }
+        }
+    }, []);
 
     // Empty chart placeholder data for layout purposes
     const emptyChartData = {
@@ -187,12 +203,26 @@ const InvestmentPage = () => {
                             {/* Growth Projection Chart */}
                             <ProjectionChart data={recommendation.projections} />
 
+                            {/* AI Investment Suggestions */}
+                            <InvestmentSuggestions 
+                                userProfile={profileData}
+                                transactionSummary={{
+                                    monthlyIncome: parseFloat(profileData.income) || 0,
+                                    monthlyExpenses: (parseFloat(profileData.income) || 0) - (parseFloat(profileData.monthlyInvestment) || 0),
+                                    availableForInvestment: parseFloat(profileData.monthlyInvestment) || 0,
+                                    currentSavings: 0 // This could be fetched from actual user data
+                                }}
+                            />
+
                             {/* Disclaimer */}
                             <Disclaimer />
                         </motion.div>
                     )}
                 </motion.div>
             </div>
+
+            {/* AI Chat Component */}
+            <ChatIcon userId={userId} />
         </div>
     );
 };

@@ -8,6 +8,7 @@ import SourcesList from './components/SourcesList';
 import TransactionForm from './components/TransactionForm';
 import CategoryForm from './components/CategoryForm';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
+import ChatIcon from '../../components/ChatIcon';
 
 const JournalPage = () => {
     const location = useLocation();
@@ -33,6 +34,7 @@ const JournalPage = () => {
     const [editingItem, setEditingItem] = useState(null);
     const [showCategoryDeleteDialog, setShowCategoryDeleteDialog] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState(null);
+    const [userId, setUserId] = useState(null);
 
     // Check URL for showForm parameter
     useEffect(() => {
@@ -59,6 +61,17 @@ const JournalPage = () => {
 
     useEffect(() => {
         fetchSources();
+        
+        // Get user ID from token
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setUserId(payload.userId || payload.id);
+            } catch (error) {
+                console.error('Error parsing token:', error);
+            }
+        }
     }, []);
 
     // Fetch categories
@@ -122,7 +135,6 @@ const JournalPage = () => {
             newErrors.amount = 'Amount must be a positive number';
         }
 
-        if (!formData.description) newErrors.description = 'Description is required';
         if (!formData.category) newErrors.category = 'Category is required';
         if (!formData.source) newErrors.source = 'Source is required';
 
@@ -448,6 +460,9 @@ const JournalPage = () => {
                 cancelText="Cancel"
                 type="danger"
             />
+
+            {/* AI Chat Component */}
+            <ChatIcon userId={userId} />
         </div>
     );
 };

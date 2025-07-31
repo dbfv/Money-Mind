@@ -110,7 +110,7 @@ const TransactionForm = ({
                                 {/* Description */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Description *
+                                        Description
                                     </label>
                                     <input
                                         type="text"
@@ -118,7 +118,7 @@ const TransactionForm = ({
                                         value={formData.description}
                                         onChange={handleInputChange}
                                         className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
-                                        placeholder="Enter description"
+                                        placeholder="Enter description (optional)"
                                     />
                                     {errors.description && (
                                         <p className="text-red-500 text-sm mt-1">{errors.description}</p>

@@ -5,12 +5,13 @@ import Header from './components/Header';
 import FinancialSummary from './components/FinancialSummary';
 import SpendingByCategory from './components/SpendingByCategory';
 import CashFlowChart from './components/CashFlowChart';
+import ChatIcon from '../../components/ChatIcon';
 import { useNavigate } from 'react-router-dom';
 
 const DashboardPage = () => {
-    const [isAIOpen, setIsAIOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [userId, setUserId] = useState(null);
     const [dashboardData, setDashboardData] = useState({
         financialSummary: { income: 0, spending: 0, netFlow: 0 },
         spendingByCategory: [],
@@ -69,6 +70,17 @@ const DashboardPage = () => {
 
     useEffect(() => {
         fetchDashboardData();
+        
+        // Get user ID from token
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setUserId(payload.userId || payload.id);
+            } catch (error) {
+                console.error('Error parsing token:', error);
+            }
+        }
     }, []);
 
     const { financialSummary, spendingByCategory, cashFlowData, totalAmount } = dashboardData;
@@ -165,6 +177,8 @@ const DashboardPage = () => {
                         </motion.div>
                     </div>
 
+                    {/* AI Chat Component */}
+                    <ChatIcon userId={userId} />
 
                     {/* Empty State for No Data */}
                     {spendingByCategory.length === 0 && cashFlowData.length === 0 && (
@@ -191,52 +205,6 @@ const DashboardPage = () => {
                 </motion.div>
             </div>
 
-            {/* AI Copilot Bubble */}
-            <motion.div
-                className="fixed bottom-6 right-6 z-50"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 1, type: "spring", stiffness: 200 }}
-            >
-                <motion.button
-                    className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg flex items-center justify-center text-white text-2xl"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setIsAIOpen(!isAIOpen)}
-                >
-                    🤖
-                </motion.button>
-
-                {/* AI Chat Window */}
-                {isAIOpen && (
-                    <motion.div
-                        className="absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 p-4"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                    >
-                        <div className="flex items-center justify-between mb-4">
-                            <h4 className="font-semibold text-gray-900">AI Copilot</h4>
-                            <button
-                                onClick={() => setIsAIOpen(false)}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                        <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                            <p className="text-sm text-gray-700">
-                                Hi! I'm here to help with your financial questions. How can I assist you today?
-                            </p>
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Ask me anything..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                    </motion.div>
-                )}
-            </motion.div>
         </div>
     );
 };

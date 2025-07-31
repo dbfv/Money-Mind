@@ -5,6 +5,7 @@ import Calendar from './Calendar';
 import EventForm from './EventForm';
 import DayDetailsForm from './DayDetailsForm';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
+import ChatIcon from '../../components/ChatIcon';
 
 const CalendarPage = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -25,6 +26,7 @@ const CalendarPage = () => {
         expenses: 0,
         net: 0
     });
+    const [userId, setUserId] = useState(null);
 
     // Create a new event object
     const createNewEvent = (date) => ({
@@ -701,6 +703,9 @@ const CalendarPage = () => {
                 cancelText="Cancel"
                 type="danger"
             />
+
+            {/* AI Chat Component */}
+            <ChatIcon userId={userId} />
         </div>
     );
 };

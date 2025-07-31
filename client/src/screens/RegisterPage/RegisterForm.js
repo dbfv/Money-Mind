@@ -135,7 +135,7 @@ const RegisterForm = () => {
             {/* Success Message */}
             {successMessage && (
                 <motion.div
-                    className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg"
+                    className="mb-4 md:mb-6 p-3 md:p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm md:text-base"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
@@ -146,7 +146,7 @@ const RegisterForm = () => {
             {/* API Error Message */}
             {apiError && (
                 <motion.div
-                    className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg"
+                    className="mb-4 md:mb-6 p-3 md:p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm md:text-base"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
@@ -154,10 +154,10 @@ const RegisterForm = () => {
                 </motion.div>
             )}
 
-            <form onSubmit={onSubmit} className="space-y-3">
+            <form onSubmit={onSubmit} className="space-y-3 md:space-y-4">
                 {/* Email Field */}
                 <motion.div variants={itemVariants}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                         Email Address
                     </label>
                     <input
@@ -165,7 +165,7 @@ const RegisterForm = () => {
                         name="email"
                         value={email}
                         onChange={onChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                        className={`w-full px-3 py-2 text-sm md:text-base border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
                         placeholder="Enter your email"
                         required
                     />
@@ -182,7 +182,7 @@ const RegisterForm = () => {
 
                 {/* Password Field */}
                 <motion.div variants={itemVariants}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                         Password
                     </label>
                     <input
@@ -190,7 +190,7 @@ const RegisterForm = () => {
                         name="password"
                         value={password}
                         onChange={onChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
+                        className={`w-full px-3 py-2 text-sm md:text-base border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
                         placeholder="Enter your password"
                         required
                     />
@@ -210,7 +210,7 @@ const RegisterForm = () => {
 
                 {/* Name Field */}
                 <motion.div variants={itemVariants}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                         Name
                     </label>
                     <input
@@ -218,7 +218,7 @@ const RegisterForm = () => {
                         name="name"
                         value={name}
                         onChange={onChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                        className={`w-full px-3 py-2 text-sm md:text-base border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                         placeholder="What should we call you?"
                         required
                     />
@@ -235,7 +235,7 @@ const RegisterForm = () => {
 
                 {/* Age Field */}
                 <motion.div variants={itemVariants}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
                         Age
                     </label>
                     <input
@@ -243,7 +243,7 @@ const RegisterForm = () => {
                         name="age"
                         value={age}
                         onChange={onChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.age ? 'border-red-500' : 'border-gray-300'}`}
+                        className={`w-full px-3 py-2 text-sm md:text-base border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.age ? 'border-red-500' : 'border-gray-300'}`}
                         placeholder="Enter your age"
                         min="18"
                         max="120"
@@ -268,7 +268,7 @@ const RegisterForm = () => {
                         variants={buttonVariants}
                         whileHover="hover"
                         whileTap="tap"
-                        className={`w-full py-3 px-6 rounded-lg font-medium text-white transition-all duration-200 ${isSubmitting
+                        className={`w-full py-2 md:py-3 px-4 md:px-6 text-sm md:text-base rounded-lg font-medium text-white transition-all duration-200 ${isSubmitting
                             ? 'bg-gray-400 cursor-not-allowed'
                             : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
                             }`}
@@ -286,10 +286,10 @@ const RegisterForm = () => {
             </form>
 
             <motion.div
-                className="text-center mt-4"
+                className="text-center mt-3 md:mt-4"
                 variants={itemVariants}
             >
-                <p className="text-gray-600">
+                <p className="text-sm md:text-base text-gray-600">
                     Already have an account?{' '}
                     <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200">
                         Sign in

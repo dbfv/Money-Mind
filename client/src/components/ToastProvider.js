@@ -40,7 +40,7 @@ export const ToastProvider = ({ children }) => {
             message,
             type: options.type || 'success',
             duration: options.duration || 3000,
-            position: options.position || 'top'
+            position: options.position || 'bottom-left'
         });
     };
 

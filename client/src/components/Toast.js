@@ -52,7 +52,7 @@ const Toast = ({
     message,
     type = 'success',
     duration = 3000,
-    position = 'bottom-center' // Change default to bottom-center
+    position = 'bottom-left' // Change default to bottom-left
 }) => {
     useEffect(() => {
         if (show && onClose) {
@@ -130,8 +130,11 @@ const Toast = ({
             positionClass = 'bottom-4 right-4';
             break;
         case 'bottom-center':
-        default:
             positionClass = 'bottom-4 left-1/2 transform -translate-x-1/2';
+            break;
+        case 'bottom-left':
+        default:
+            positionClass = 'bottom-4 left-4';
             break;
     }
 

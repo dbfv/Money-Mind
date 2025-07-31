@@ -3,8 +3,11 @@ import { motion } from 'framer-motion';
 import { ENDPOINTS } from '../../config/api';
 // Import the EventEmitter
 import EventEmitter, { APP_EVENTS } from '../../utils/events';
+import { useToast } from '../../components/ToastProvider';
 
 const ProfilePage = () => {
+    const { showToast } = useToast();
+    
     // State for user profile data
     const [profile, setProfile] = useState({
         name: '',
@@ -162,15 +165,10 @@ const ProfilePage = () => {
                 name: data.name,
                 age: data.age
             }));
-            setSuccessMessage('Profile updated successfully!');
-
-            // Auto-hide success message after 3 seconds
-            setTimeout(() => {
-                setSuccessMessage(null);
-            }, 3000);
+            showToast('Profile updated successfully!', { type: 'success' });
         } catch (err) {
             console.error('Error updating profile:', err);
-            setError(err.message || 'Failed to update profile');
+            showToast(err.message || 'Failed to update profile', { type: 'error' });
         } finally {
             setIsSubmitting(false);
         }
@@ -213,15 +211,10 @@ const ProfilePage = () => {
                 ...prev,
                 investmentProfile: data.investmentProfile
             }));
-            setSuccessMessage('Investment profile updated successfully!');
-
-            // Auto-hide success message after 3 seconds
-            setTimeout(() => {
-                setSuccessMessage(null);
-            }, 3000);
+            showToast('Investment profile updated successfully!', { type: 'success' });
         } catch (err) {
             console.error('Error updating investment profile:', err);
-            setError(err.message || 'Failed to update investment profile');
+            showToast(err.message || 'Failed to update investment profile', { type: 'error' });
         } finally {
             setIsSubmittingInvestmentProfile(false);
         }
@@ -261,15 +254,10 @@ const ProfilePage = () => {
                 }
             }));
 
-            setSuccessMessage(data.message);
-
-            // Auto-hide success message after 5 seconds
-            setTimeout(() => {
-                setSuccessMessage(null);
-            }, 5000);
+            showToast(data.message, { type: 'success', duration: 5000 });
         } catch (err) {
             console.error('Error calculating suggestion:', err);
-            setError(err.message);
+            showToast(err.message, { type: 'error' });
         } finally {
             setIsCalculatingSuggestion(false);
         }
@@ -281,13 +269,13 @@ const ProfilePage = () => {
         if (file) {
             // Check file size (5MB limit)
             if (file.size > 5 * 1024 * 1024) {
-                setError('Avatar image must be less than 5MB');
+                showToast('Avatar image must be less than 5MB', { type: 'error' });
                 return;
             }
 
             // Check file type
             if (!file.type.startsWith('image/')) {
-                setError('Only image files are allowed');
+                showToast('Only image files are allowed', { type: 'error' });
                 return;
             }
 
@@ -305,7 +293,7 @@ const ProfilePage = () => {
     // Update the handleAvatarUpload function to emit an event on success
     const handleAvatarUpload = async () => {
         if (!avatarFile) {
-            setError('Please select an image to upload');
+            showToast('Please select an image to upload', { type: 'error' });
             return;
         }
 
@@ -350,15 +338,10 @@ const ProfilePage = () => {
             // Reset the file state
             setAvatarFile(null);
             setPreviewUrl(null);
-            setSuccessMessage('Avatar updated successfully!');
-
-            // Auto-hide success message after 3 seconds
-            setTimeout(() => {
-                setSuccessMessage(null);
-            }, 3000);
+            showToast('Avatar updated successfully!', { type: 'success' });
         } catch (err) {
             console.error('Error uploading avatar:', err);
-            setError(err.message);
+            showToast(err.message, { type: 'error' });
         } finally {
             setIsUploadingAvatar(false);
         }
@@ -409,21 +392,6 @@ const ProfilePage = () => {
                 <div className="max-w-6xl mx-auto">
                     <h1 className="text-3xl font-bold text-gray-900 mb-8">My Profile</h1>
 
-                    {error && (
-                        <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-md">
-                            <p className="text-red-700">{error}</p>
-                        </div>
-                    )}
-
-                    {successMessage && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-md"
-                        >
-                            <p className="text-green-700">{successMessage}</p>
-                        </motion.div>
-                    )}
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Personal Information Section */}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Dropdown from '../../components/Dropdown';
 import PopupForm from '../../components/PopupForm';
+import { useToast } from '../../components/ToastProvider';
 
 const EventForm = ({
     onClose,
@@ -15,6 +16,7 @@ const EventForm = ({
     sources
 }) => {
     const [showAdvanced, setShowAdvanced] = useState(false);
+    const { showToast } = useToast();
 
     // Type options
     const typeOptions = [
@@ -54,13 +56,15 @@ const EventForm = ({
     // Determine if we should show category/source fields
     const showFinancialFields = event.type === 'expense' || event.type === 'income';
 
+    // Show error as toast
+    useEffect(() => {
+        if (error) {
+            showToast(error, { type: 'error' });
+        }
+    }, [error, showToast]);
+
     const formContent = (
         <>
-            {error && (
-                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                    {error}
-                </div>
-            )}
 
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

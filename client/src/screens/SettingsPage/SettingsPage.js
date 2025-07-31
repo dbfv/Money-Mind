@@ -3,9 +3,11 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
 import { ENDPOINTS } from '../../config/api';
+import { useToast } from '../../components/ToastProvider';
 
 const SettingsPage = () => {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
 
@@ -49,12 +51,12 @@ const SettingsPage = () => {
     // Validate password change form
     const validatePasswordForm = () => {
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            setError('New passwords do not match');
+            showToast('New passwords do not match', { type: 'error' });
             return false;
         }
 
         if (passwordData.newPassword.length < 8) {
-            setError('Password must be at least 8 characters long');
+            showToast('Password must be at least 8 characters long', { type: 'error' });
             return false;
         }
 
@@ -96,20 +98,15 @@ const SettingsPage = () => {
                 throw new Error(errorData.message || 'Failed to change password');
             }
 
-            setSuccessMessage('Password changed successfully');
+            showToast('Password changed successfully', { type: 'success' });
             setPasswordData({
                 currentPassword: '',
                 newPassword: '',
                 confirmPassword: ''
             });
-
-            // Auto-hide success message after 3 seconds
-            setTimeout(() => {
-                setSuccessMessage(null);
-            }, 3000);
         } catch (err) {
             console.error('Error changing password:', err);
-            setError(err.message || 'Failed to change password');
+            showToast(err.message || 'Failed to change password', { type: 'error' });
         } finally {
             setIsChangingPassword(false);
         }
@@ -134,11 +131,7 @@ const SettingsPage = () => {
             }
         }
 
-        setSuccessMessage('Theme preference saved');
-        // Auto-hide success message after 3 seconds
-        setTimeout(() => {
-            setSuccessMessage(null);
-        }, 3000);
+        showToast('Theme preference saved', { type: 'success' });
     };
 
     // Handle account deletion
@@ -167,7 +160,7 @@ const SettingsPage = () => {
             navigate('/login', { replace: true });
         } catch (err) {
             console.error('Error deleting account:', err);
-            setError(err.message || 'Failed to delete account');
+            showToast(err.message || 'Failed to delete account', { type: 'error' });
             setConfirmDialog(prev => ({ ...prev, isOpen: false }));
         }
     };
@@ -212,23 +205,6 @@ const SettingsPage = () => {
                 <div className="max-w-6xl mx-auto">
                     <h1 className="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
 
-                    {/* Error message */}
-                    {error && (
-                        <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-md">
-                            <p className="text-red-700">{error}</p>
-                        </div>
-                    )}
-
-                    {/* Success message */}
-                    {successMessage && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-md"
-                        >
-                            <p className="text-green-700">{successMessage}</p>
-                        </motion.div>
-                    )}
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Security Section */}

@@ -1173,75 +1173,111 @@ Only include predictions with confidence > 0.6. If no patterns are found, return
     }
 
     /**
-     * Generate investment suggestions based on user profile
-     * @param {Object} userProfile - User's investment profile
-     * @param {Object} transactionSummary - User's financial summary
-     * @returns {Object} Investment suggestions
+     * Generate investment suggestions based on user profile and average monthly income
+     * @param {Object} userProfile - User's complete profile from MongoDB
+     * @param {number} averageMonthlyIncome - Pre-calculated average monthly income
+     * @returns {Object} Investment suggestions with asset allocation
      */
-    async generateInvestmentSuggestion(userProfile, transactionSummary) {
+    async generateInvestmentSuggestion(userProfile, averageMonthlyIncome) {
         try {
+            // Pre-AI Calculation: Calculate suggested investable income (10-12% of monthly income)
+            const suggestedInvestableIncome = Math.round(averageMonthlyIncome * 0.12); // Using 12% as upper end
+
             const knowledgeBase = `
 FINANCIAL KNOWLEDGE BASE:
 
-RISK PROFILES:
-- Conservative: 70% bonds, 20% stocks, 10% cash equivalents
-- Moderate: 50% stocks, 40% bonds, 10% alternatives
-- Aggressive: 80% stocks, 15% alternatives, 5% bonds
+LIFE-CYCLE INVESTMENT PRINCIPLES:
+- 20s-30s: Aggressive growth focus, 80-90% stocks, 10-20% bonds. Time horizon allows for risk.
+- 30s-40s: Growth with some stability, 70-80% stocks, 20-30% bonds. Building wealth phase.
+- 40s-50s: Balanced approach, 60-70% stocks, 30-40% bonds. Pre-retirement planning.
+- 50s-60s: Conservative growth, 50-60% stocks, 40-50% bonds. Capital preservation focus.
+- 60s+: Income focus, 30-40% stocks, 60-70% bonds. Wealth preservation and income.
 
-INVESTMENT PRINCIPLES:
-1. Diversification reduces risk
-2. Time in market beats timing the market
-3. Dollar-cost averaging smooths volatility
-4. Emergency fund should be 3-6 months expenses
-5. High-yield savings for short-term goals
-
-AGE-BASED ALLOCATION:
-- 20s-30s: Can take more risk, focus on growth
-- 40s-50s: Balance growth and stability
-- 60s+: Focus on income and capital preservation
+RISK TOLERANCE GUIDELINES:
+- Conservative (1-33): Focus on capital preservation, higher bond allocation
+- Moderate (34-66): Balanced growth and stability
+- Aggressive (67-100): Maximum growth potential, higher stock allocation
 
 INVESTMENT VEHICLES:
-- Index Funds: Low cost, broad diversification
-- ETFs: Liquid, tax efficient
-- Target Date Funds: Automatic rebalancing
-- Individual Stocks: Higher risk, potential higher reward
-- Bonds: Stability, income generation
+- ETFs: Low cost, liquid, tax efficient, broad market exposure
+- Mutual Funds: Professional management, diversification, various strategies
+- Index Funds: Passive investing, lowest costs, market returns
+- Target Date Funds: Automatic rebalancing, age-appropriate allocation
+- Individual Stocks: Higher risk/reward, requires research and monitoring
+- Bonds: Stability, income generation, portfolio balance
+
+DIVERSIFICATION PRINCIPLES:
+1. Never put all money in one asset type
+2. Mix domestic and international exposure
+3. Include both growth and value investments
+4. Consider different market capitalizations (large, mid, small cap)
+5. Rebalance periodically to maintain target allocation
 `;
 
-            const prompt = `${knowledgeBase}
+            const prompt = `You are a helpful and cautious financial education assistant. You are not a licensed financial advisor. Your goal is to provide educational investment suggestions based on established financial principles and a user's personal data. You must always include a disclaimer.
 
-USER PROFILE:
+Here is the core financial knowledge you must use for your analysis: ${knowledgeBase}
+
+Now, here is the profile of the user you are assisting: 
 Age: ${userProfile.age}
-Risk Tolerance: ${userProfile.riskTolerance}
-Investment Goals: ${userProfile.investmentGoals || 'Not specified'}
-Time Horizon: ${userProfile.timeHorizon || 'Not specified'}
+Risk Tolerance: ${userProfile.investmentProfile?.riskTolerance || 50} (scale 1-100)
 
-FINANCIAL SUMMARY:
-Monthly Income: $${transactionSummary.monthlyIncome}
-Monthly Expenses: $${transactionSummary.monthlyExpenses}
-Available for Investment: $${transactionSummary.availableForInvestment}
-Current Savings: $${transactionSummary.currentSavings || 0}
+Based on their average monthly income of $${averageMonthlyIncome}, we have calculated a suggested monthly amount to invest of $${suggestedInvestableIncome} (12% of income). 
 
-Based on this information, provide personalized investment suggestions in this JSON format:
+Your task is to take this suggested investment amount and create a diversified asset allocation plan with 4-6 different asset types. The plan should be appropriate for the user's life-cycle stage and risk tolerance. You must diversify across different asset types such as:
+- Stock ETFs (domestic and international)
+- Bond ETFs (government and corporate)
+- Index Funds (broad market exposure)
+- Target Date Funds (age-appropriate automatic rebalancing)
+- REITs (real estate exposure)
+- International Funds (global diversification)
+- Gold/Precious Metals (inflation hedge and portfolio insurance)
+- High-Yield Savings/Bank Interest (emergency fund and capital preservation)
+
+Choose the most appropriate mix based on their age and risk tolerance. Include gold for inflation protection and some bank interest allocation for liquidity and safety. Explain why you are suggesting this allocation based on their age and risk profile.
+
+Provide your answer ONLY as a single JSON object with the following structure. You should suggest 4-6 different asset types for proper diversification, including gold and bank interest:
 {
-  "riskAssessment": "Brief assessment of user's risk profile",
-  "recommendedAllocation": {
-    "stocks": percentage,
-    "bonds": percentage,
-    "alternatives": percentage,
-    "cash": percentage
-  },
-  "specificSuggestions": [
+  "assetAllocation": [
     {
-      "category": "Investment type",
-      "recommendation": "Specific recommendation",
-      "reasoning": "Why this is suitable"
+      "assetType": "Stock ETFs",
+      "percentage": number,
+      "amount": number,
+      "reasoning": "string"
+    },
+    {
+      "assetType": "Bond ETFs", 
+      "percentage": number,
+      "amount": number,
+      "reasoning": "string"
+    },
+    {
+      "assetType": "Index Funds",
+      "percentage": number,
+      "amount": number,
+      "reasoning": "string"
+    },
+    {
+      "assetType": "Target Date Funds",
+      "percentage": number,
+      "amount": number,
+      "reasoning": "string"
+    },
+    {
+      "assetType": "Gold/Precious Metals",
+      "percentage": number,
+      "amount": number,
+      "reasoning": "string"
+    },
+    {
+      "assetType": "High-Yield Savings",
+      "percentage": number,
+      "amount": number,
+      "reasoning": "string"
     }
   ],
-  "monthlyInvestmentAmount": suggested_amount,
-  "emergencyFundStatus": "Assessment of emergency fund",
-  "nextSteps": ["Action item 1", "Action item 2"],
-  "warnings": ["Any important warnings or considerations"]
+  "summary": "string explaining the overall strategy and why it fits the user",
+  "disclaimer": "This is for educational purposes only and is not financial advice. Please consult a professional."
 }`;
 
             const result = await this.model.generateContent(prompt);
@@ -1250,10 +1286,19 @@ Based on this information, provide personalized investment suggestions in this J
             // Extract JSON from response
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
-                return JSON.parse(jsonMatch[0]);
+                const aiResponse = JSON.parse(jsonMatch[0]);
+                
+                // Create final response object with our calculated amount
+                return {
+                    suggestedInvestableIncome,
+                    averageMonthlyIncome,
+                    assetAllocation: aiResponse.assetAllocation,
+                    summary: aiResponse.summary,
+                    disclaimer: aiResponse.disclaimer
+                };
             }
             
-            throw new Error('Could not parse investment suggestions');
+            throw new Error('Could not parse investment suggestions from AI response');
         } catch (error) {
             console.error('Error in generateInvestmentSuggestion:', error);
             throw error;

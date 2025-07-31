@@ -33,7 +33,7 @@ const LandingPage = () => {
             <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }} />
 
             <motion.div
-                className="text-center max-w-4xl mx-auto px-8 relative z-10"
+                className="text-center max-w-4xl mx-auto px-4 md:px-8 relative z-10"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"

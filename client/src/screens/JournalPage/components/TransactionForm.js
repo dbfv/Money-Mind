@@ -32,26 +32,26 @@ const TransactionForm = ({
         <AnimatePresence>
             {showForm && (
                 <motion.div
-                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 md:p-4 z-50"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={onClose}
                 >
                     <motion.div
-                        className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto hide-scrollbar"
+                        className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[95vh] md:max-h-[90vh] overflow-y-auto hide-scrollbar"
                         variants={formVariants}
                         initial="hidden"
                         animate="visible"
                         exit="exit"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="p-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-bold text-gray-900">Add Transaction</h2>
+                        <div className="p-4 md:p-6">
+                            <div className="flex items-center justify-between mb-4 md:mb-6">
+                                <h2 className="text-xl md:text-2xl font-bold text-gray-900">Add Transaction</h2>
                                 <button
                                     onClick={onClose}
-                                    className="text-gray-500 hover:text-gray-700 text-xl"
+                                    className="text-gray-500 hover:text-gray-700 text-xl p-1"
                                 >
                                     ✕
                                 </button>

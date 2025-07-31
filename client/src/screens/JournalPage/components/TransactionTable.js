@@ -31,49 +31,104 @@ const TransactionTable = ({ transactions, isLoading, error, onEdit, onDelete }) 
                 ) : transactions.length === 0 ? (
                     <div className="text-gray-400">No transactions found.</div>
                 ) : (
-                    <table className="w-full mt-4 divide-y divide-gray-200 table-fixed">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="w-[15%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                <th className="w-[15%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                <th className="w-[25%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                                <th className="w-[20%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                                <th className="w-[15%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
-                                <th className="w-[10%] px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                    <>
+                        {/* Desktop Table */}
+                        <div className="hidden md:block">
+                            <table className="w-full mt-4 divide-y divide-gray-200 table-fixed">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="w-[15%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                        <th className="w-[15%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                        <th className="w-[25%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                        <th className="w-[20%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                                        <th className="w-[15%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
+                                        <th className="w-[10%] px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {transactions.map((t) => (
+                                        <tr key={t._id} className="hover:bg-gray-50">
+                                            <td className="px-3 py-4 text-sm text-gray-900 truncate">{new Date(t.date).toLocaleDateString()}</td>
+                                            <td className={`px-3 py-4 text-sm font-semibold truncate ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                                                ${t.amount.toFixed(2)}
+                                            </td>
+                                            <td className="px-3 py-4 text-sm text-gray-900 truncate" title={t.description}>{t.description}</td>
+                                            <td className="px-3 py-4 text-sm text-gray-900 truncate">{typeof t.category === 'object' && t.category !== null ? t.category.name : t.category}</td>
+                                            <td className="px-3 py-4 text-sm text-gray-900 truncate">{t.source?.name || t.source}</td>
+                                            <td className="px-3 py-4 text-right text-sm font-medium">
+                                                <div className="flex justify-end gap-1">
+                                                    <button
+                                                        onClick={() => onEdit(t)}
+                                                        className="inline-flex items-center px-1.5 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+                                                        title="Edit"
+                                                    >
+                                                        <span className="text-xs">✏️</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(t)}
+                                                        className="inline-flex items-center px-1.5 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+                                                        title="Delete"
+                                                    >
+                                                        <span className="text-xs">🗑️</span>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Cards */}
+                        <div className="md:hidden mt-4 space-y-4">
                             {transactions.map((t) => (
-                                <tr key={t._id} className="hover:bg-gray-50">
-                                    <td className="px-3 py-4 text-sm text-gray-900 truncate">{new Date(t.date).toLocaleDateString()}</td>
-                                    <td className={`px-3 py-4 text-sm font-semibold truncate ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                                        ${t.amount.toFixed(2)}
-                                    </td>
-                                    <td className="px-3 py-4 text-sm text-gray-900 truncate" title={t.description}>{t.description}</td>
-                                    <td className="px-3 py-4 text-sm text-gray-900 truncate">{typeof t.category === 'object' && t.category !== null ? t.category.name : t.category}</td>
-                                    <td className="px-3 py-4 text-sm text-gray-900 truncate">{t.source?.name || t.source}</td>
-                                    <td className="px-3 py-4 text-right text-sm font-medium">
-                                        <div className="flex justify-end gap-1">
+                                <motion.div
+                                    key={t._id}
+                                    className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+                                    whileHover={{ scale: 1.02 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="flex-1">
+                                            <div className={`text-lg font-semibold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                                                ${t.amount.toFixed(2)}
+                                            </div>
+                                            <div className="text-sm text-gray-500">
+                                                {new Date(t.date).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
                                             <button
                                                 onClick={() => onEdit(t)}
-                                                className="inline-flex items-center px-1.5 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+                                                className="p-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
                                                 title="Edit"
                                             >
-                                                <span className="text-xs">✏️</span>
+                                                <span className="text-sm">✏️</span>
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteClick(t)}
-                                                className="inline-flex items-center px-1.5 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+                                                className="p-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
                                                 title="Delete"
                                             >
-                                                <span className="text-xs">🗑️</span>
+                                                <span className="text-sm">🗑️</span>
                                             </button>
                                         </div>
-                                    </td>
-                                </tr>
+                                    </div>
+                                    <div className="text-sm text-gray-900 font-medium mb-1">
+                                        {t.description}
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-600">
+                                        <span>
+                                            <strong>Category:</strong> {typeof t.category === 'object' && t.category !== null ? t.category.name : t.category}
+                                        </span>
+                                        <span>
+                                            <strong>Source:</strong> {t.source?.name || t.source}
+                                        </span>
+                                    </div>
+                                </motion.div>
                             ))}
-                        </tbody>
-                    </table>
+                        </div>
+                    </>
                 )}
             </div>
 

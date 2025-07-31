@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastProvider } from './components/ToastProvider';
 
 // Pages
 import LandingPage from './screens/LandingPage/LandingPage';
@@ -35,71 +36,73 @@ const PrivateRoute = ({ children }) => {
 
 function App() {
     return (
-        <Router>
-            <Routes>
-                {/* Public routes */}
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
+        <ToastProvider>
+            <Router>
+                <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
 
-                {/* Private routes */}
-                <Route path="/dashboard" element={
-                    <PrivateRoute>
-                        <DashboardPage />
-                    </PrivateRoute>
-                } />
+                    {/* Private routes */}
+                    <Route path="/dashboard" element={
+                        <PrivateRoute>
+                            <DashboardPage />
+                        </PrivateRoute>
+                    } />
 
-                <Route path="/journal" element={
-                    <PrivateRoute>
-                        <JournalPage />
-                    </PrivateRoute>
-                } />
+                    <Route path="/journal" element={
+                        <PrivateRoute>
+                            <JournalPage />
+                        </PrivateRoute>
+                    } />
 
-                <Route path="/calendar" element={
-                    <PrivateRoute>
-                        <CalendarPage />
-                    </PrivateRoute>
-                } />
+                    <Route path="/calendar" element={
+                        <PrivateRoute>
+                            <CalendarPage />
+                        </PrivateRoute>
+                    } />
 
-                <Route path="/management" element={
-                    <PrivateRoute>
-                        <ManagementPage />
-                    </PrivateRoute>
-                } />
+                    <Route path="/management" element={
+                        <PrivateRoute>
+                            <ManagementPage />
+                        </PrivateRoute>
+                    } />
 
-                <Route path="/category-management" element={
-                    <PrivateRoute>
-                        <CategoryManagementPage />
-                    </PrivateRoute>
-                } />
+                    <Route path="/category-management" element={
+                        <PrivateRoute>
+                            <CategoryManagementPage />
+                        </PrivateRoute>
+                    } />
 
-                <Route path="/investments" element={
-                    <PrivateRoute>
-                        <InvestmentPage />
-                    </PrivateRoute>
-                } />
+                    <Route path="/investments" element={
+                        <PrivateRoute>
+                            <InvestmentPage />
+                        </PrivateRoute>
+                    } />
 
-                <Route path="/profile" element={
-                    <PrivateRoute>
-                        <ProfilePage />
-                    </PrivateRoute>
-                } />
+                    <Route path="/profile" element={
+                        <PrivateRoute>
+                            <ProfilePage />
+                        </PrivateRoute>
+                    } />
 
-                <Route path="/settings" element={
-                    <PrivateRoute>
-                        <SettingsPage />
-                    </PrivateRoute>
-                } />
+                    <Route path="/settings" element={
+                        <PrivateRoute>
+                            <SettingsPage />
+                        </PrivateRoute>
+                    } />
 
-                {/* Add a redirect for the old /manage path to point to the new CategoryManagementPage */}
-                <Route path="/manage" element={
-                    <Navigate to="/category-management" replace />
-                } />
+                    {/* Add a redirect for the old /manage path to point to the new CategoryManagementPage */}
+                    <Route path="/manage" element={
+                        <Navigate to="/category-management" replace />
+                    } />
 
-                {/* Fallback route */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-        </Router>
+                    {/* Fallback route */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </Router>
+        </ToastProvider>
     );
 }
 

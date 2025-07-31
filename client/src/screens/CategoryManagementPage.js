@@ -5,6 +5,8 @@ import CategoryFields from '../components/Forms/CategoryFields';
 import SourceFields from '../components/Forms/SourceFields';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import { ENDPOINTS } from '../config/api';
+// Import the useToast hook
+import { useToast } from '../components/ToastProvider';
 
 const CategoryManagementPage = () => {
     // States for categories
@@ -12,10 +14,9 @@ const CategoryManagementPage = () => {
     // Update the category and source form state objects to match the expected structure
     // from CategoryFields and SourceFields components
     const [categoryFormData, setCategoryFormData] = useState({
-        categoryName: '',
-        categoryType: 'expense',
-        description: '',
-        color: '#3B82F6' // Default blue color
+        name: '',
+        type: 'expense',
+        description: ''
     });
 
     // States for sources
@@ -48,6 +49,9 @@ const CategoryManagementPage = () => {
         onConfirm: () => { },
         type: 'warning'
     });
+
+    // Use the toast hook
+    const { showToast } = useToast();
 
     // Fetch categories and sources on component mount
     useEffect(() => {
@@ -166,10 +170,20 @@ const CategoryManagementPage = () => {
         }
     };
 
-    // Update the handleCategoryChange function to properly handle input changes from CategoryFields
+    // Update handleCategoryChange to map component field names to state field names
     const handleCategoryChange = (e) => {
         const { name, value } = e.target;
-        setCategoryFormData(prev => ({ ...prev, [name]: value }));
+        // Map the field names from CategoryFields to our state structure
+        const fieldMap = {
+            'categoryName': 'name',
+            'categoryType': 'type',
+            'description': 'description'
+        };
+
+        setCategoryFormData({
+            ...categoryFormData,
+            [fieldMap[name] || name]: value
+        });
     };
 
     // Update the handleSourceChange function to properly handle input changes from SourceFields
@@ -183,12 +197,14 @@ const CategoryManagementPage = () => {
 
     // Update the handleEdit function to properly set up the form for editing
     const handleEdit = (item) => {
+        setIsEditing(true);
+        setCurrentItemId(item._id);
+
         if (activeTab === 'categories') {
             setCategoryFormData({
-                categoryName: item.name,
-                categoryType: item.type,
-                description: item.description || '',
-                color: item.color || '#3B82F6'
+                name: item.name,
+                type: item.type.toLowerCase(),
+                description: item.description || ''
             });
         } else {
             setSourceFormData({
@@ -201,14 +217,11 @@ const CategoryManagementPage = () => {
             });
         }
 
-        setIsEditing(true);
-        setCurrentItemId(item._id);
-
         // Scroll to form and ensure it's visible
         document.querySelector('#formSection').scrollIntoView({ behavior: 'smooth' });
     };
 
-    // Update the handleCategorySubmit function to use the correct form fields
+    // Update the handleCategorySubmit function to use toast
     const handleCategorySubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -224,8 +237,8 @@ const CategoryManagementPage = () => {
 
             // Validate form
             const errors = {};
-            if (!categoryFormData.categoryName.trim()) {
-                errors.categoryName = 'Category name is required';
+            if (!categoryFormData.name.trim()) {
+                errors.name = 'Category name is required';
             }
             if (Object.keys(errors).length > 0) {
                 setFormErrors(errors);
@@ -234,10 +247,9 @@ const CategoryManagementPage = () => {
 
             // Prepare the payload with the correct field names
             const categoryPayload = {
-                name: categoryFormData.categoryName,
-                type: categoryFormData.categoryType,
-                description: categoryFormData.description,
-                color: categoryFormData.color
+                name: categoryFormData.name,
+                type: categoryFormData.type,
+                description: categoryFormData.description
             };
 
             const url = isEditing
@@ -260,24 +272,23 @@ const CategoryManagementPage = () => {
                 throw new Error(errorData.message || 'Failed to save category');
             }
 
-            // Success
+            // Success - show toast notification
             resetForms();
             await fetchCategories();
-            setSuccessMessage(isEditing ? 'Category updated successfully!' : 'Category created successfully!');
-
-            // Auto-hide success message after 3 seconds
-            setTimeout(() => {
-                setSuccessMessage(null);
-            }, 3000);
+            showToast(
+                isEditing ? 'Category updated successfully!' : 'Category created successfully!',
+                { type: 'success' }
+            );
         } catch (err) {
             console.error('Error saving category:', err);
-            setError(err.message || 'Failed to save category');
+            // Show error toast
+            showToast(err.message || 'Failed to save category', { type: 'error' });
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    // Update the handleSourceSubmit function to use the correct form fields
+    // Update the handleSourceSubmit function to use toast
     const handleSourceSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -334,18 +345,17 @@ const CategoryManagementPage = () => {
                 throw new Error(errorData.message || 'Failed to save source');
             }
 
-            // Success
+            // Success - show toast notification
             resetForms();
             await fetchSources();
-            setSuccessMessage(isEditing ? 'Source updated successfully!' : 'Source created successfully!');
-
-            // Auto-hide success message after 3 seconds
-            setTimeout(() => {
-                setSuccessMessage(null);
-            }, 3000);
+            showToast(
+                isEditing ? 'Source updated successfully!' : 'Source created successfully!',
+                { type: 'success' }
+            );
         } catch (err) {
             console.error('Error saving source:', err);
-            setError(err.message || 'Failed to save source');
+            // Show error toast
+            showToast(err.message || 'Failed to save source', { type: 'error' });
         } finally {
             setIsSubmitting(false);
         }
@@ -354,10 +364,9 @@ const CategoryManagementPage = () => {
     // Update the resetForms function to match the new state structure
     const resetForms = () => {
         setCategoryFormData({
-            categoryName: '',
-            categoryType: 'expense',
-            description: '',
-            color: '#3B82F6'
+            name: '',
+            type: 'expense',
+            description: ''
         });
         setSourceFormData({
             sourceName: '',
@@ -412,22 +421,18 @@ const CategoryManagementPage = () => {
                 throw new Error(errorData.message || `Failed to delete ${activeTab === 'categories' ? 'category' : 'source'}`);
             }
 
-            // Success
+            // Success - show toast notification
             if (activeTab === 'categories') {
                 await fetchCategories();
+                showToast('Category deleted successfully!', { type: 'success' });
             } else {
                 await fetchSources();
+                showToast('Source deleted successfully!', { type: 'success' });
             }
-
-            setSuccessMessage(`${activeTab === 'categories' ? 'Category' : 'Source'} deleted successfully!`);
-
-            // Auto-hide success message after 3 seconds
-            setTimeout(() => {
-                setSuccessMessage(null);
-            }, 3000);
         } catch (err) {
             console.error(`Error deleting ${activeTab === 'categories' ? 'category' : 'source'}:`, err);
-            setError(err.message || `Failed to delete ${activeTab === 'categories' ? 'category' : 'source'}`);
+            // Show error toast
+            showToast(err.message || `Failed to delete ${activeTab === 'categories' ? 'category' : 'source'}`, { type: 'error' });
         } finally {
             setIsSubmitting(false);
         }
@@ -450,34 +455,6 @@ const CategoryManagementPage = () => {
             >
                 <div className="max-w-7xl mx-auto">
                     <h1 className="text-3xl font-bold text-gray-900 mb-8">Financial Management</h1>
-
-                    {/* Error message */}
-                    <AnimatePresence>
-                        {error && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-md"
-                            >
-                                <p className="text-red-700">{error}</p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Success message */}
-                    <AnimatePresence>
-                        {successMessage && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-md"
-                            >
-                                <p className="text-green-700">{successMessage}</p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
 
                     {/* Tabs */}
                     <div className="mb-8">
@@ -551,7 +528,11 @@ const CategoryManagementPage = () => {
                                                 exit="exit"
                                             >
                                                 <CategoryFields
-                                                    values={categoryFormData}
+                                                    values={{
+                                                        categoryName: categoryFormData.name,
+                                                        categoryType: categoryFormData.type,
+                                                        description: categoryFormData.description
+                                                    }}
                                                     onChange={handleCategoryChange}
                                                     errors={formErrors}
                                                 />
@@ -663,10 +644,18 @@ const CategoryManagementPage = () => {
                                                     <table className="min-w-full divide-y divide-gray-200">
                                                         <thead className="bg-gray-50">
                                                             <tr>
-                                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Color</th>
-                                                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                    Name
+                                                                </th>
+                                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                    Type
+                                                                </th>
+                                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                    Description
+                                                                </th>
+                                                                <th scope="col" className="relative px-6 py-3">
+                                                                    <span className="sr-only">Actions</span>
+                                                                </th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="bg-white divide-y divide-gray-200">
@@ -683,31 +672,29 @@ const CategoryManagementPage = () => {
                                                                     >
                                                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{category.name}</td>
                                                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{category.type}</td>
-                                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                                            <div className="flex items-center">
-                                                                                <div
-                                                                                    className="w-6 h-6 rounded-full mr-2"
-                                                                                    style={{ backgroundColor: category.color || '#3B82F6' }}
-                                                                                ></div>
-                                                                                <span className="text-sm text-gray-500">{category.color || '#3B82F6'}</span>
-                                                                            </div>
-                                                                        </td>
+                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{category.description}</td>
                                                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                                             <div className="flex justify-end space-x-2">
                                                                                 <motion.button
-                                                                                    whileHover={{ scale: 1.05 }}
+                                                                                    whileHover={{ scale: 1.05, backgroundColor: '#2563EB', color: 'white' }}
                                                                                     whileTap={{ scale: 0.95 }}
                                                                                     onClick={() => handleEdit(category)}
-                                                                                    className="text-blue-600 hover:text-blue-800"
+                                                                                    className="inline-flex items-center px-2.5 py-1.5 border border-blue-300 shadow-sm text-xs font-medium rounded text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                                                                                 >
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                                    </svg>
                                                                                     Edit
                                                                                 </motion.button>
                                                                                 <motion.button
-                                                                                    whileHover={{ scale: 1.05 }}
+                                                                                    whileHover={{ scale: 1.05, backgroundColor: '#DC2626', color: 'white' }}
                                                                                     whileTap={{ scale: 0.95 }}
                                                                                     onClick={() => handleShowDeleteConfirm(category)}
-                                                                                    className="text-red-600 hover:text-red-800"
+                                                                                    className="inline-flex items-center px-2.5 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200"
                                                                                 >
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                                    </svg>
                                                                                     Delete
                                                                                 </motion.button>
                                                                             </div>
@@ -773,19 +760,25 @@ const CategoryManagementPage = () => {
                                                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                                             <div className="flex justify-end space-x-2">
                                                                                 <motion.button
-                                                                                    whileHover={{ scale: 1.05 }}
+                                                                                    whileHover={{ scale: 1.05, backgroundColor: '#2563EB', color: 'white' }}
                                                                                     whileTap={{ scale: 0.95 }}
                                                                                     onClick={() => handleEdit(source)}
-                                                                                    className="text-blue-600 hover:text-blue-800"
+                                                                                    className="inline-flex items-center px-2.5 py-1.5 border border-blue-300 shadow-sm text-xs font-medium rounded text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                                                                                 >
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                                    </svg>
                                                                                     Edit
                                                                                 </motion.button>
                                                                                 <motion.button
-                                                                                    whileHover={{ scale: 1.05 }}
+                                                                                    whileHover={{ scale: 1.05, backgroundColor: '#DC2626', color: 'white' }}
                                                                                     whileTap={{ scale: 0.95 }}
                                                                                     onClick={() => handleShowDeleteConfirm(source)}
-                                                                                    className="text-red-600 hover:text-red-800"
+                                                                                    className="inline-flex items-center px-2.5 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200"
                                                                                 >
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                                    </svg>
                                                                                     Delete
                                                                                 </motion.button>
                                                                             </div>

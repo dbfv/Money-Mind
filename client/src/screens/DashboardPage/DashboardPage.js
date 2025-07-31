@@ -178,7 +178,7 @@ const DashboardPage = () => {
                     </div>
 
                     {/* AI Chat Component */}
-                    <ChatIcon userId={userId} />
+                    <ChatIcon userId={userId} onTransactionAdded={fetchDashboardData} />
 
                     {/* Empty State for No Data */}
                     {spendingByCategory.length === 0 && cashFlowData.length === 0 && (

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import io from 'socket.io-client';
 
-const AIChat = ({ isOpen, onClose, userId }) => {
+const AIChat = ({ isOpen, onClose, userId, onTransactionAdded }) => {
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isConnected, setIsConnected] = useState(false);
@@ -39,6 +39,15 @@ const AIChat = ({ isOpen, onClose, userId }) => {
                 };
 
                 setMessages(prev => [...prev, newMessage]);
+
+                // Check if a transaction was added and trigger refresh
+                if (response.results && response.results.some(result => result.type === 'transaction') && onTransactionAdded) {
+                    onTransactionAdded();
+                }
+                // Legacy support for old transaction format
+                if (response.transaction && onTransactionAdded) {
+                    onTransactionAdded();
+                }
             });
 
             // Add welcome message

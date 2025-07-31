@@ -34,6 +34,11 @@ const calendarEventSchema = new Schema({
     enum: ['once', 'daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'annually'],
     default: 'once',
   },
+  recurrenceCount: {
+    type: Number,
+    default: null, // null means infinite recurrence, number means limited recurrence
+    min: 1,
+  },
   startDate: {
     type: Date,
     required: true,

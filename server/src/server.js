@@ -12,6 +12,7 @@ const economicAssumptionRoutes = require('./api/economicAssumptions/economicAssu
 const sixJarsProfileRoutes = require('./api/sixJarsProfiles/sixJarsProfile.routes');
 const categoryRoutes = require('./api/categories/category.routes');
 const calendarEventRoutes = require('./api/calendarEvents/calendarEvent.routes');
+const chatHistoryRoutes = require('./api/chatHistories/chatHistory.routes');
 const aiService = require('./services/aiService');
 const predictionService = require('./services/predictionService');
 
@@ -49,6 +50,7 @@ economicAssumptionRoutes(app);
 sixJarsProfileRoutes(app);
 categoryRoutes(app);
 calendarEventRoutes(app);
+chatHistoryRoutes(app);
 
 // Socket.IO for real-time chat
 io.on('connection', (socket) => {

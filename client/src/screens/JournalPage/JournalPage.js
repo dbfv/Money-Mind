@@ -462,7 +462,7 @@ const JournalPage = () => {
             />
 
             {/* AI Chat Component */}
-            <ChatIcon userId={userId} />
+            <ChatIcon userId={userId} onTransactionAdded={fetchTransactions} />
         </div>
     );
 };

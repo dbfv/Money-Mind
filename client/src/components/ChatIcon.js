@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import AIChat from './AIChat';
 
-const ChatIcon = ({ userId }) => {
+const ChatIcon = ({ userId, onTransactionAdded }) => {
     const [isAIOpen, setIsAIOpen] = useState(false);
 
     return (
@@ -25,6 +25,7 @@ const ChatIcon = ({ userId }) => {
                 isOpen={isAIOpen} 
                 onClose={() => setIsAIOpen(false)} 
                 userId={userId}
+                onTransactionAdded={onTransactionAdded}
             />
         </>
     );

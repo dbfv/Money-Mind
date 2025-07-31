@@ -75,10 +75,15 @@ exports.createTransaction = async (req, res) => {
 // @access  Private
 exports.getTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.find({ userId: req.user.id })
+    const userId = req.user.id;
+    console.log('Getting transactions for user:', userId);
+
+    const transactions = await Transaction.find({ userId: new mongoose.Types.ObjectId(userId) })
       .populate('category')
       .populate('source')
       .sort({ date: -1 }); // Sort by date descending
+
+    console.log(`Found ${transactions.length} transactions`);
     res.json(transactions);
   } catch (error) {
     console.error('Transactions error:', error); // Debug log
@@ -93,19 +98,38 @@ exports.getDashboardStats = async (req, res) => {
   try {
     const userId = req.user.id;
     const currentDate = new Date();
-    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
 
-    console.log('Dashboard request for user:', userId); // Debug log
-    console.log('Date range:', { startOfMonth, endOfMonth }); // Debug log
+    // Fix date range calculation to get the correct current month
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth(); // 0-indexed (0 = January)
+
+    // Create date objects with time set to midnight in UTC to avoid timezone issues
+    const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0));
+    const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0, 23, 59, 59, 999));
+
+    console.log('Dashboard request for user:', userId);
+    console.log('Current date:', currentDate.toISOString());
+    console.log('Date range:', {
+      startOfMonth: startOfMonth.toISOString(),
+      endOfMonth: endOfMonth.toISOString()
+    });
 
     // Get transactions for current month
+    console.log('Searching for transactions with userId:', userId);
+    console.log('Date range filters:', {
+      startOfMonth: startOfMonth.toISOString(),
+      endOfMonth: endOfMonth.toISOString()
+    });
+
     const monthlyTransactions = await Transaction.find({
-      userId,
+      userId: new mongoose.Types.ObjectId(userId),
       date: { $gte: startOfMonth, $lte: endOfMonth }
     })
       .populate('category')
       .populate('source');
+
+    console.log('Found monthly transactions:', monthlyTransactions.length);
+    console.log('Transaction sample:', monthlyTransactions.slice(0, 2));
 
     // Calculate financial summary
     const income = monthlyTransactions
@@ -115,6 +139,8 @@ exports.getDashboardStats = async (req, res) => {
     const spending = monthlyTransactions
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
+
+    console.log('Calculated financial summary:', { income, spending });
 
     const netFlow = income - spending;
 
@@ -136,10 +162,16 @@ exports.getDashboardStats = async (req, res) => {
         }
       },
       {
+        $unwind: {
+          path: '$categoryInfo',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
         $group: {
           _id: '$category',
           total: { $sum: '$amount' },
-          categoryName: { $first: { $arrayElemAt: ['$categoryInfo.name', 0] } }
+          categoryName: { $first: '$categoryInfo.name' }
         }
       },
       {
@@ -147,12 +179,25 @@ exports.getDashboardStats = async (req, res) => {
       }
     ]);
 
+    console.log('Spending by category aggregation results:', spendingByCategory);
+
     // Get cash flow data for last 30 days
-    const thirtyDaysAgo = new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0); // Set to beginning of day
+
+    console.log('Cash flow date range:', {
+      thirtyDaysAgo: thirtyDaysAgo.toISOString(),
+      today: today.toISOString()
+    });
+
     const cashFlowTransactions = await Transaction.find({
-      userId,
+      userId: new mongoose.Types.ObjectId(userId),
       date: { $gte: thirtyDaysAgo }
     }).sort({ date: 1 });
+
+    console.log(`Found ${cashFlowTransactions.length} transactions for cash flow data`);
 
     // Calculate running balance
     let balance = 0;

@@ -6,6 +6,8 @@ server/node_modules/
 # Files
 spec.txt
 spec.md
+acli.exe
+.agent.md
 
 # Logs
 npm-debug.log*

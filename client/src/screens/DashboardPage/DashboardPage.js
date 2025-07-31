@@ -5,7 +5,6 @@ import Header from './components/Header';
 import FinancialSummary from './components/FinancialSummary';
 import SpendingByCategory from './components/SpendingByCategory';
 import CashFlowChart from './components/CashFlowChart';
-import SixJarsAnalysis from './components/SixJarsAnalysis';
 import { useNavigate } from 'react-router-dom';
 
 const DashboardPage = () => {
@@ -16,8 +15,7 @@ const DashboardPage = () => {
         financialSummary: { income: 0, spending: 0, netFlow: 0 },
         spendingByCategory: [],
         cashFlowData: [],
-        totalAmount: 0,
-        jars: []
+        totalAmount: 0
     });
 
     const navigate = useNavigate();
@@ -73,7 +71,7 @@ const DashboardPage = () => {
         fetchDashboardData();
     }, []);
 
-    const { financialSummary, spendingByCategory, cashFlowData, totalAmount, jars } = dashboardData;
+    const { financialSummary, spendingByCategory, cashFlowData, totalAmount } = dashboardData;
 
     // Animation variants
     const containerVariants = {
@@ -167,10 +165,6 @@ const DashboardPage = () => {
                         </motion.div>
                     </div>
 
-                    {/* 6 Jars Analysis Section */}
-                    <motion.div variants={itemVariants}>
-                        <SixJarsAnalysis jars={jars} />
-                    </motion.div>
 
                     {/* Empty State for No Data */}
                     {spendingByCategory.length === 0 && cashFlowData.length === 0 && (

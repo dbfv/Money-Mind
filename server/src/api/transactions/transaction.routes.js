@@ -8,6 +8,7 @@ const transactionRoutes = (app) => {
 
     // Specific routes should come before parameter routes
     app.get('/api/transactions/dashboard', auth, transactionController.getDashboardStats);
+    app.delete('/api/transactions/bulk', auth, transactionController.bulkDeleteTransactions);
 
     app.route('/api/transactions/:id')
         .get(auth, transactionController.getTransactionById)

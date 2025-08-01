@@ -474,3 +474,86 @@ exports.getTransactionById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Bulk delete transactions
+// @route   DELETE /api/transactions/bulk
+// @access  Private
+exports.bulkDeleteTransactions = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const { type, transactionIds } = req.body;
+    const userId = req.user.id;
+
+    console.log('Bulk delete request:', { type, transactionIds: transactionIds?.length, userId });
+
+    let query = { userId: new mongoose.Types.ObjectId(userId) };
+    
+    // Add type filter if specified
+    if (type) {
+      query.type = type;
+    }
+    
+    // Add specific transaction IDs if provided
+    if (transactionIds && transactionIds.length > 0) {
+      query._id = { $in: transactionIds.map(id => new mongoose.Types.ObjectId(id)) };
+    }
+
+    // Find transactions to delete
+    const transactionsToDelete = await Transaction.find(query).session(session);
+    
+    if (transactionsToDelete.length === 0) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: 'No transactions found to delete' });
+    }
+
+    console.log(`Found ${transactionsToDelete.length} transactions to delete`);
+
+    // Update source balances for each transaction
+    const sourceUpdates = new Map();
+    
+    for (const transaction of transactionsToDelete) {
+      const sourceId = transaction.source.toString();
+      
+      if (!sourceUpdates.has(sourceId)) {
+        sourceUpdates.set(sourceId, 0);
+      }
+      
+      // Reverse the transaction effect on source balance
+      if (transaction.type === 'expense') {
+        sourceUpdates.set(sourceId, sourceUpdates.get(sourceId) + transaction.amount);
+      } else if (transaction.type === 'income') {
+        sourceUpdates.set(sourceId, sourceUpdates.get(sourceId) - transaction.amount);
+      }
+    }
+
+    // Apply source balance updates
+    for (const [sourceId, balanceChange] of sourceUpdates) {
+      const source = await Source.findById(sourceId).session(session);
+      if (source) {
+        source.balance += balanceChange;
+        await source.save({ session });
+        console.log(`Updated source ${source.name} balance by ${balanceChange}`);
+      }
+    }
+
+    // Delete the transactions
+    const deleteResult = await Transaction.deleteMany(query).session(session);
+    
+    await session.commitTransaction();
+    session.endSession();
+
+    console.log(`Successfully deleted ${deleteResult.deletedCount} transactions`);
+    
+    res.json({
+      message: `Successfully deleted ${deleteResult.deletedCount} ${type || ''} transaction(s)`,
+      deletedCount: deleteResult.deletedCount
+    });
+  } catch (error) {
+    console.error('Error in bulk delete:', error);
+    await session.abortTransaction();
+    session.endSession();
+    res.status(400).json({ message: error.message });
+  }
+};

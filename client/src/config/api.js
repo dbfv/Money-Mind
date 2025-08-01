@@ -20,6 +20,7 @@ export const ENDPOINTS = {
     CATEGORIES: `${API_BASE_URL}/api/categories`,
     SOURCES: `${API_BASE_URL}/api/sources`,
     TRANSACTIONS: `${API_BASE_URL}/api/transactions`,
+    TRANSACTIONS_BULK_DELETE: `${API_BASE_URL}/api/transactions/bulk`,
     DASHBOARD: `${API_BASE_URL}/api/transactions/dashboard`,
     CALENDAR_EVENTS: `${API_BASE_URL}/api/calendar-events`,
 }; 

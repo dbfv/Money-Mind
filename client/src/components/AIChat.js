@@ -40,9 +40,14 @@ const AIChat = ({ isOpen, onClose, userId, onTransactionAdded }) => {
 
                 setMessages(prev => [...prev, newMessage]);
 
-                // Check if a transaction was added and trigger refresh
-                if (response.results && response.results.some(result => result.type === 'transaction') && onTransactionAdded) {
-                    onTransactionAdded();
+                // Check if any data-modifying action occurred and trigger refresh
+                if (response.results && onTransactionAdded) {
+                    const hasDataChange = response.results.some(result => 
+                        ['transaction', 'multiple_transactions', 'bulk_delete', 'category', 'source', 'event'].includes(result.type)
+                    );
+                    if (hasDataChange) {
+                        onTransactionAdded();
+                    }
                 }
                 // Legacy support for old transaction format
                 if (response.transaction && onTransactionAdded) {
@@ -193,6 +198,12 @@ const AIChat = ({ isOpen, onClose, userId, onTransactionAdded }) => {
                                                     )}
                                                     {result.type === 'event' && (
                                                         <>📅 Event added: {result.data.title}</>
+                                                    )}
+                                                    {result.type === 'multiple_transactions' && (
+                                                        <>✅ Multiple Transactions: {result.data.message}</>
+                                                    )}
+                                                    {result.type === 'bulk_delete' && (
+                                                        <>🗑️ Bulk Delete: {result.data.message}</>
                                                     )}
                                                     {result.type === 'error' && (
                                                         <>❌ Error: {result.message}</>

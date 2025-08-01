@@ -127,10 +127,21 @@ const CalendarPage = () => {
         loadData();
     }, [currentMonth]);
 
-    // Fetch categories and sources once
+    // Fetch categories and sources once, and get user ID
     useEffect(() => {
         fetchCategories();
         fetchSources();
+        
+        // Get user ID from token
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setUserId(payload.userId || payload.id);
+            } catch (error) {
+                console.error('Error parsing token:', error);
+            }
+        }
     }, []);
 
     // Helper function to get month range
@@ -235,10 +246,10 @@ const CalendarPage = () => {
             setTransactions(data);
 
             // Update monthly summary when transactions are fetched
-            fetchMonthlySummary();
+            await fetchMonthlySummary();
 
-            // Get existing calendar events and update with transactions
-            updateEventsWithTransactions(events);
+            // Refresh calendar events to ensure complete synchronization
+            await fetchCalendarData();
         } catch (err) {
             console.error('Error fetching transactions:', err);
         }
@@ -432,14 +443,12 @@ const CalendarPage = () => {
                 throw new Error(errorData.message || 'Failed to delete event');
             }
 
-            // First fetch calendar data to get updated events
-            await fetchCalendarData();
-
-            // Also fetch transactions to ensure we have the latest data
-            await fetchTransactions();
-
-            // Recalculate monthly summary with the latest transactions
-            fetchMonthlySummary();
+            // Refresh all calendar data after event deletion
+            await Promise.all([
+                fetchCalendarData(),
+                fetchTransactions(),
+                fetchMonthlySummary()
+            ]);
 
             closeModal();
             setShowDeleteConfirm(false);
@@ -705,7 +714,14 @@ const CalendarPage = () => {
             />
 
             {/* AI Chat Component */}
-            <ChatIcon userId={userId} onTransactionAdded={fetchTransactions} />
+            <ChatIcon 
+                userId={userId} 
+                onTransactionAdded={() => {
+                    fetchTransactions();
+                    fetchSources(); // Also refresh sources to show updated balances
+                    fetchMonthlySummary(); // Also refresh monthly summary
+                }} 
+            />
         </div>
     );
 };

@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import ConfirmationDialog from '../../../components/ConfirmationDialog';
 
-const TransactionTable = ({ transactions, isLoading, error, onEdit, onDelete }) => {
+const TransactionTable = ({ transactions, isLoading, error, onEdit, onDelete, onBulkDelete }) => {
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [transactionToDelete, setTransactionToDelete] = useState(null);
+    const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+    const [bulkDeleteType, setBulkDeleteType] = useState(null);
 
     const handleDeleteClick = (transaction) => {
         setTransactionToDelete(transaction);
@@ -15,12 +17,59 @@ const TransactionTable = ({ transactions, isLoading, error, onEdit, onDelete }) 
         if (transactionToDelete) {
             onDelete(transactionToDelete);
         }
+        setShowConfirmDialog(false);
+        setTransactionToDelete(null);
     };
+
+    const handleBulkDeleteClick = (type) => {
+        setBulkDeleteType(type);
+        setShowBulkDeleteDialog(true);
+    };
+
+    const handleConfirmBulkDelete = () => {
+        if (bulkDeleteType && onBulkDelete) {
+            onBulkDelete(bulkDeleteType);
+        }
+        setShowBulkDeleteDialog(false);
+        setBulkDeleteType(null);
+    };
+
+    const expenseCount = transactions.filter(t => t.type === 'expense').length;
+    const incomeCount = transactions.filter(t => t.type === 'income').length;
 
     return (
         <motion.div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div className="text-2xl font-semibold text-gray-900 mb-4 md:mb-0">Transaction Journal</div>
+                <div className="flex flex-wrap gap-2 mb-4 md:mb-0">
+                    {expenseCount > 0 && (
+                        <button
+                            onClick={() => handleBulkDeleteClick('expense')}
+                            className="px-3 py-1.5 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors text-sm font-medium"
+                            title={`Delete all ${expenseCount} expense transactions`}
+                        >
+                            🗑️ Delete All Expenses ({expenseCount})
+                        </button>
+                    )}
+                    {incomeCount > 0 && (
+                        <button
+                            onClick={() => handleBulkDeleteClick('income')}
+                            className="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-md hover:bg-orange-200 transition-colors text-sm font-medium"
+                            title={`Delete all ${incomeCount} income transactions`}
+                        >
+                            🗑️ Delete All Income ({incomeCount})
+                        </button>
+                    )}
+                    {transactions.length > 0 && (
+                        <button
+                            onClick={() => handleBulkDeleteClick('all')}
+                            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium"
+                            title={`Delete all ${transactions.length} transactions`}
+                        >
+                            🗑️ Delete All ({transactions.length})
+                        </button>
+                    )}
+                </div>
             </div>
             {/* Transactions List */}
             <div className="mt-8">
@@ -132,7 +181,7 @@ const TransactionTable = ({ transactions, isLoading, error, onEdit, onDelete }) 
                 )}
             </div>
 
-            {/* Confirmation Dialog */}
+            {/* Single Transaction Delete Confirmation Dialog */}
             <ConfirmationDialog
                 isOpen={showConfirmDialog}
                 onClose={() => setShowConfirmDialog(false)}
@@ -140,6 +189,24 @@ const TransactionTable = ({ transactions, isLoading, error, onEdit, onDelete }) 
                 title="Delete Transaction"
                 message="Are you sure you want to delete this transaction? This action cannot be undone."
                 confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+            />
+
+            {/* Bulk Delete Confirmation Dialog */}
+            <ConfirmationDialog
+                isOpen={showBulkDeleteDialog}
+                onClose={() => setShowBulkDeleteDialog(false)}
+                onConfirm={handleConfirmBulkDelete}
+                title={`Delete All ${bulkDeleteType === 'all' ? 'Transactions' : bulkDeleteType === 'expense' ? 'Expenses' : 'Income'}`}
+                message={
+                    bulkDeleteType === 'all' 
+                        ? `Are you sure you want to delete ALL ${transactions.length} transactions? This will remove all your financial data and cannot be undone.`
+                        : bulkDeleteType === 'expense'
+                        ? `Are you sure you want to delete ALL ${expenseCount} expense transactions? This action cannot be undone and will restore the amounts to your source balances.`
+                        : `Are you sure you want to delete ALL ${incomeCount} income transactions? This action cannot be undone and will remove the amounts from your source balances.`
+                }
+                confirmText={`Delete All ${bulkDeleteType === 'all' ? 'Transactions' : bulkDeleteType === 'expense' ? 'Expenses' : 'Income'}`}
                 cancelText="Cancel"
                 type="danger"
             />

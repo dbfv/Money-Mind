@@ -64,6 +64,51 @@ class AIService {
                         }
                     },
                     {
+                        name: "addMultipleTransactions",
+                        description: "Records multiple transactions for the user, useful for recurring expenses or multiple dates",
+                        parameters: {
+                            type: "object",
+                            properties: {
+                                transactions: {
+                                    type: "array",
+                                    description: "Array of transaction objects",
+                                    items: {
+                                        type: "object",
+                                        properties: {
+                                            amount: {
+                                                type: "number",
+                                                description: "The transaction amount (positive number)"
+                                            },
+                                            description: {
+                                                type: "string",
+                                                description: "Description of the transaction"
+                                            },
+                                            category: {
+                                                type: "string",
+                                                description: "Category name (will be created if doesn't exist)"
+                                            },
+                                            sourceId: {
+                                                type: "string",
+                                                description: "Source ID from available sources, or 'default' to use first available"
+                                            },
+                                            type: {
+                                                type: "string",
+                                                enum: ["income", "expense"],
+                                                description: "Type of transaction"
+                                            },
+                                            date: {
+                                                type: "string",
+                                                description: "Transaction date in YYYY-MM-DD format"
+                                            }
+                                        },
+                                        required: ["amount", "category", "type", "date"]
+                                    }
+                                }
+                            },
+                            required: ["transactions"]
+                        }
+                    },
+                    {
                         name: "createCategory",
                         description: "Creates a new expense or income category for the user",
                         parameters: {
@@ -264,6 +309,21 @@ class AIService {
                         }
                     },
                     {
+                        name: "bulkDeleteTransactions",
+                        description: "Deletes multiple transactions by type (expense, income, or all)",
+                        parameters: {
+                            type: "object",
+                            properties: {
+                                type: {
+                                    type: "string",
+                                    enum: ["expense", "income", "all"],
+                                    description: "Type of transactions to delete - 'expense' for all expenses, 'income' for all income, 'all' for everything"
+                                }
+                            },
+                            required: ["type"]
+                        }
+                    },
+                    {
                         name: "updateTransaction",
                         description: "Updates an existing transaction",
                         parameters: {
@@ -417,6 +477,13 @@ class AIService {
 
             const prompt = `You are a proactive financial assistant. Your goal is to help users manage their finances efficiently with minimal friction.${conversationContext}
 
+CRITICAL FORMATTING REQUIREMENT - READ THIS FIRST:
+- ALWAYS respond in plain text format ONLY
+- NEVER use markdown formatting of any kind
+- NO asterisks (*), NO underscores (_), NO backticks, NO hashtags
+- NO bold (**text**), NO italics (*text*), NO code formatting
+- Use simple, clean plain text only - this is MANDATORY
+
 CURRENT CONTEXT:
 - Available categories: ${categoriesText}
 - Available sources: ${sourcesText}
@@ -428,7 +495,7 @@ BEHAVIOR GUIDELINES:
 3. MAKE SMART ASSUMPTIONS: Use the first available source if not specified
 4. MINIMIZE CONFIRMATIONS: Only ask for clarification when absolutely necessary
 5. BE CONVERSATIONAL: Provide brief, friendly responses after taking actions
-6. USE PLAIN TEXT: Never use markdown formatting (**, *, _, etc.) in responses - use plain text only
+6. USE PLAIN TEXT ONLY: Never use markdown formatting (**, *, _, etc.) in responses
 
 CATEGORY MATCHING LOGIC:
 1. FIRST: Look for existing categories that the item logically belongs to
@@ -457,26 +524,70 @@ PATTERN RECOGNITION:
 - "Spent [amount] on [item]" = expense transaction - match to existing category
 - "Source [Name] [Amount]" = ask user what type of source this is before creating
 
+COMPOSITE/MULTIPLE TRANSACTION PATTERNS - CRITICAL PRIORITY:
+- "Car oil change on 3rd of May, 7th of June, 4th of July" = MUST use addMultipleTransactions with 3 separate transactions
+- "50 gas on May 3rd, 45 gas on June 7th" = MUST use addMultipleTransactions with 2 separate transactions  
+- "Rent 1200 on 1st of each month for 3 months" = MUST use addMultipleTransactions with 3 separate transactions
+- "Coffee 5 on Monday, Lunch 15 on Tuesday, Gas 40 on Wednesday" = MUST use addMultipleTransactions with 3 separate transactions
+
+DETECTION RULES - ALWAYS CHECK FIRST:
+- If prompt contains multiple dates (May 3rd, June 7th, July 4th) → MUST use addMultipleTransactions
+- If prompt contains multiple items with dates → MUST use addMultipleTransactions  
+- If prompt contains "and" between dates → MUST use addMultipleTransactions
+- If prompt contains commas separating dates → MUST use addMultipleTransactions
+- NEVER use addTransaction for prompts with multiple dates - this causes silent failures
+
+DATE PARSING:
+- "3rd of May" = 2024-05-03, "7th of June" = 2024-06-07, "4th of July" = 2024-07-04
+- "May 3rd" = 2024-05-03, "June 7th" = 2024-06-07, "July 4th" = 2024-07-04
+
 USER MESSAGE: "${message}"
 
 INSTRUCTIONS:
 - ALWAYS try to extract transaction info from user input, even if format is informal
+- CRITICAL: Check for MULTIPLE transactions first - if user mentions multiple dates, amounts, or items, use addMultipleTransactions
 - Pattern "[Amount] [Item]" should trigger addTransaction with amount and EXISTING category that fits the item
 - CRITICAL: Before creating any category, check if the item fits into an existing category
 - Example: "20 Noodles" → look for Food/Restaurant category first, use that instead of creating "Noodles"
 - Example: "50 Gas" → look for Transportation/Car category first, use that instead of creating "Gas"
 - ONLY create new categories if the item doesn't logically fit any existing category
+
+MULTIPLE TRANSACTION HANDLING - HIGHEST PRIORITY:
+- STEP 1: ALWAYS scan for multiple dates FIRST before doing anything else
+- STEP 2: If ANY multiple dates detected → IMMEDIATELY use addMultipleTransactions (NOT addTransaction)
+- STEP 3: Count the dates and create that many transactions
+
+EXAMPLES THAT REQUIRE addMultipleTransactions:
+- "Car oil change on 3rd of May, 7th of June, 4th of July" → 3 transactions (May 3, June 7, July 4)
+- "Coffee 5 on Monday, Lunch 15 on Tuesday" → 2 transactions (different items, different dates)
+- "50 gas on May 3rd, 45 gas on June 7th" → 2 transactions (different amounts, different dates)
+- "Rent 1200 every month for 3 months" → 3 transactions (recurring pattern)
+
+CRITICAL: Using addTransaction for multiple dates will FAIL SILENTLY - transactions won't be created but AI will claim success
+
+SINGLE TRANSACTION HANDLING:
 - If user mentions spending money, immediately use addTransaction (match to existing category first)
 - If user mentions earning money, immediately use addTransaction with type="income"
 - If user mentions bills or reminders, use addCalendarEvent with type="reminder" for reminders or "expense" for bills
 - If user explicitly asks to create categories/sources, use the appropriate tools
 - For source creation: If type is not specified, ask "What type of source is [Name]? (Bank Account, E-Wallet, Cash, or Other)"
+
+RESPONSE GUIDELINES:
 - Take action first, then provide a brief confirmation
 - Don't ask "Would you like me to..." - just do it and confirm what you did
 - For unclear messages, try to interpret as transactions first before asking for clarification
-- IMPORTANT: Use plain text only in responses - NO markdown formatting (no **, *, _, etc.)
-- Example good response: "Great! I added your $20 burger expense to your Food category."
-- Example bad response: "Great! I added your **$20** **burger** expense to your **Food** category."`;
+
+CRITICAL FORMATTING RULE - NO MARKDOWN EVER:
+- NEVER use ** for bold text
+- NEVER use * for emphasis  
+- NEVER use _ for italics
+- NEVER use ` for code
+- NEVER use # for headers
+- Use ONLY plain text in all responses
+- Example CORRECT: "Great! I added your 10 dollar ice cream expense from your VCB account, categorized as Food."
+- Example WRONG: "Great! Your **10 expense for 'Ice cream'** from your **VCB** account, categorized as **'Food'**, has been successfully recorded."
+- Example CORRECT: "I created 3 car oil change transactions for May 3rd, June 7th, and July 4th."
+- Example WRONG: "I created **3** car oil change transactions for **May 3rd**, **June 7th**, and **July 4th**."`;
 
             // Prepare conversation for API call
             const contents = [];
@@ -527,6 +638,13 @@ INSTRUCTIONS:
                             case "addTransaction":
                                 result = await this.executeAddTransaction(userId, functionCall.args);
                                 results.push({ type: 'transaction', data: result });
+                                break;
+                                
+                            case "addMultipleTransactions":
+                                console.log('Executing addMultipleTransactions with args:', functionCall.args);
+                                result = await this.executeAddMultipleTransactions(userId, functionCall.args);
+                                console.log('addMultipleTransactions result:', result);
+                                results.push({ type: 'multiple_transactions', data: result });
                                 break;
                                 
                             case "createCategory":
@@ -594,6 +712,11 @@ INSTRUCTIONS:
                                 results.push({ type: 'transactions', data: result });
                                 break;
                                 
+                            case "bulkDeleteTransactions":
+                                result = await this.executeBulkDeleteTransactions(userId, functionCall.args);
+                                results.push({ type: 'bulk_delete', data: result });
+                                break;
+                                
                             default:
                                 console.warn(`Unknown function: ${functionCall.name}`);
                         }
@@ -603,7 +726,7 @@ INSTRUCTIONS:
                 }
                 
                 // Generate confirmation message
-                const confirmationPrompt = `I have successfully executed the following actions: ${JSON.stringify(results)}. Provide a brief, friendly confirmation message to the user about what was accomplished.`;
+                const confirmationPrompt = `I have successfully executed the following actions: ${JSON.stringify(results)}. Provide a brief, friendly confirmation message to the user about what was accomplished. CRITICAL: Use ONLY plain text - NO markdown formatting (**, *, _, etc.). Example: "Great! I added your 10 dollar ice cream expense from your VCB account, categorized as Food."`;
                 
                 try {
                     const confirmationResult = await this.model.generateContent(confirmationPrompt);
@@ -874,6 +997,55 @@ INSTRUCTIONS:
         await transaction.populate(['category', 'source']);
 
         return transaction;
+    }
+
+    /**
+     * Execute add multiple transactions function
+     * @param {string} userId - User ID
+     * @param {Object} args - Multiple transactions arguments
+     * @returns {Object} Created transactions result
+     */
+    async executeAddMultipleTransactions(userId, args) {
+        console.log('executeAddMultipleTransactions called with userId:', userId, 'args:', args);
+        const { transactions } = args;
+        
+        if (!transactions || !Array.isArray(transactions)) {
+            console.error('Invalid transactions array:', transactions);
+            throw new Error('Transactions must be an array');
+        }
+        
+        const results = [];
+        const errors = [];
+
+        console.log(`Processing ${transactions.length} transactions...`);
+        
+        for (let i = 0; i < transactions.length; i++) {
+            const transactionData = transactions[i];
+            console.log(`Processing transaction ${i + 1}:`, transactionData);
+            
+            try {
+                const result = await this.executeAddTransaction(userId, transactionData);
+                console.log(`Transaction ${i + 1} created successfully:`, result._id);
+                results.push(result);
+            } catch (error) {
+                console.error(`Transaction ${i + 1} failed:`, error.message);
+                errors.push({
+                    transaction: transactionData,
+                    error: error.message
+                });
+            }
+        }
+
+        const finalResult = {
+            successful: results,
+            failed: errors,
+            totalCreated: results.length,
+            totalFailed: errors.length,
+            message: `Successfully created ${results.length} transaction(s)${errors.length > 0 ? `, ${errors.length} failed` : ''}`
+        };
+        
+        console.log('executeAddMultipleTransactions final result:', finalResult);
+        return finalResult;
     }
 
     /**
@@ -1747,6 +1919,81 @@ Provide your answer ONLY as a single JSON object with the following structure. Y
             count: transactions.length,
             filters: { startDate, endDate, type, category, limit }
         };
+    }
+
+    /**
+     * Execute bulk delete transactions function
+     * @param {string} userId - User ID
+     * @param {Object} args - Delete arguments
+     * @returns {Object} Delete result
+     */
+    async executeBulkDeleteTransactions(userId, args) {
+        const mongoose = require('mongoose');
+        const { type } = args;
+        
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        
+        try {
+            let query = { userId: new mongoose.Types.ObjectId(userId) };
+            
+            // Add type filter if specified
+            if (type && type !== 'all') {
+                query.type = type;
+            }
+
+            // Find transactions to delete
+            const transactionsToDelete = await Transaction.find(query).session(session);
+            
+            if (transactionsToDelete.length === 0) {
+                await session.abortTransaction();
+                session.endSession();
+                throw new Error('No transactions found to delete');
+            }
+
+            // Update source balances for each transaction
+            const sourceUpdates = new Map();
+            
+            for (const transaction of transactionsToDelete) {
+                const sourceId = transaction.source.toString();
+                
+                if (!sourceUpdates.has(sourceId)) {
+                    sourceUpdates.set(sourceId, 0);
+                }
+                
+                // Reverse the transaction effect on source balance
+                if (transaction.type === 'expense') {
+                    sourceUpdates.set(sourceId, sourceUpdates.get(sourceId) + transaction.amount);
+                } else if (transaction.type === 'income') {
+                    sourceUpdates.set(sourceId, sourceUpdates.get(sourceId) - transaction.amount);
+                }
+            }
+
+            // Apply source balance updates
+            for (const [sourceId, balanceChange] of sourceUpdates) {
+                const source = await Source.findById(sourceId).session(session);
+                if (source) {
+                    source.balance += balanceChange;
+                    await source.save({ session });
+                }
+            }
+
+            // Delete the transactions
+            const deleteResult = await Transaction.deleteMany(query).session(session);
+            
+            await session.commitTransaction();
+            session.endSession();
+
+            return {
+                message: `Successfully deleted ${deleteResult.deletedCount} ${type === 'all' ? '' : type} transaction(s)`,
+                deletedCount: deleteResult.deletedCount,
+                type: type
+            };
+        } catch (error) {
+            await session.abortTransaction();
+            session.endSession();
+            throw error;
+        }
     }
 }
 

@@ -201,6 +201,49 @@ const JournalPage = () => {
         }
     };
 
+    const handleBulkDelete = async (type) => {
+        try {
+            setError(null);
+            const token = localStorage.getItem('token');
+            
+            console.log('Bulk deleting transactions of type:', type);
+            
+            const requestBody = {};
+            if (type !== 'all') {
+                requestBody.type = type;
+            }
+            
+            const res = await fetch(ENDPOINTS.TRANSACTIONS_BULK_DELETE, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ message: 'Failed to bulk delete transactions' }));
+                console.error('Bulk delete response:', res.status, errorData);
+                throw new Error(errorData.message || 'Failed to bulk delete transactions');
+            }
+            
+            const result = await res.json();
+            console.log('Bulk delete successful:', result);
+            
+            // Refresh all data after bulk delete
+            await Promise.all([
+                fetchTransactions(),
+                fetchSources()
+            ]);
+            
+            setError(null); // Clear any previous errors
+        } catch (error) {
+            console.error('Error bulk deleting transactions:', error);
+            setError(error.message);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -410,6 +453,7 @@ const JournalPage = () => {
                                 error={transactionsError}
                                 onEdit={handleEdit}
                                 onDelete={handleDelete}
+                                onBulkDelete={handleBulkDelete}
                             />
                         </motion.div>
                     </div>
@@ -462,7 +506,13 @@ const JournalPage = () => {
             />
 
             {/* AI Chat Component */}
-            <ChatIcon userId={userId} onTransactionAdded={fetchTransactions} />
+            <ChatIcon 
+                userId={userId} 
+                onTransactionAdded={() => {
+                    fetchTransactions();
+                    fetchSources(); // Also refresh sources to show updated balances
+                }} 
+            />
         </div>
     );
 };

@@ -480,8 +480,8 @@ class AIService {
 CRITICAL FORMATTING REQUIREMENT - READ THIS FIRST:
 - ALWAYS respond in plain text format ONLY
 - NEVER use markdown formatting of any kind
-- NO asterisks (*), NO underscores (_), NO backticks, NO hashtags
-- NO bold (**text**), NO italics (*text*), NO code formatting
+- NO asterisks, NO underscores, NO backticks, NO hashtags
+- NO bold text, NO italics, NO code formatting
 - Use simple, clean plain text only - this is MANDATORY
 
 CURRENT CONTEXT:
@@ -581,7 +581,7 @@ CRITICAL FORMATTING RULE - NO MARKDOWN EVER:
 - NEVER use ** for bold text
 - NEVER use * for emphasis  
 - NEVER use _ for italics
-- NEVER use ` for code
+- NEVER use backticks for code
 - NEVER use # for headers
 - Use ONLY plain text in all responses
 - Example CORRECT: "Great! I added your 10 dollar ice cream expense from your VCB account, categorized as Food."

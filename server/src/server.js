@@ -101,31 +101,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// AI Routes
-app.post('/api/ai/investment-suggestion', async (req, res) => {
-  try {
-    const { userProfile, transactionSummary } = req.body;
-    
-    if (!userProfile || !transactionSummary) {
-      return res.status(400).json({ 
-        message: 'userProfile and transactionSummary are required' 
-      });
-    }
-
-    const suggestions = await aiService.generateInvestmentSuggestion(
-      userProfile, 
-      transactionSummary
-    );
-
-    res.json(suggestions);
-  } catch (error) {
-    console.error('Error generating investment suggestions:', error);
-    res.status(500).json({ 
-      message: 'Error generating investment suggestions',
-      error: error.message 
-    });
-  }
-});
+// AI Routes already imported above
 
 // Manual prediction trigger (for testing)
 app.post('/api/ai/trigger-predictions', async (req, res) => {

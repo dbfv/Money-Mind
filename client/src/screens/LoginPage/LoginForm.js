@@ -197,9 +197,14 @@ const LoginForm = () => {
             </form>
 
             <motion.div
-                className="text-center mt-4 md:mt-6"
+                className="text-center mt-4 md:mt-6 space-y-2"
                 variants={itemVariants}
             >
+                <p className="text-sm md:text-base text-gray-600">
+                    <Link to="/forgot-password" className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200">
+                        Forgot your password?
+                    </Link>
+                </p>
                 <p className="text-sm md:text-base text-gray-600">
                     Don't have an account?{' '}
                     <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200">

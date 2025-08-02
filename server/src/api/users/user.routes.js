@@ -10,7 +10,10 @@ const {
     suggestInvestableIncome,
     changePassword,
     deleteAccount,
-    updateUserAvatar
+    updateUserAvatar,
+    forgotPassword,
+    verifyResetToken,
+    resetPassword
 } = require('./user.controller');
 const auth = require('../../middleware/auth');
 const upload = require('../../middleware/upload');
@@ -22,6 +25,16 @@ const userRoutes = (app) => {
 
     app.route('/api/users/login')
         .post(loginUser);
+
+    // Password reset routes
+    app.route('/api/users/forgot-password')
+        .post(forgotPassword);
+
+    app.route('/api/users/reset-password/:token')
+        .get(verifyResetToken);
+
+    app.route('/api/users/reset-password')
+        .post(resetPassword);
 
     // Profile routes - protected by auth middleware
     app.route('/api/users/profile')

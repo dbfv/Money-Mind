@@ -1,4 +1,5 @@
 const User = require('./user.model');
+const PasswordReset = require('./passwordReset.model');
 const SixJarsProfile = require('../sixJarsProfiles/sixJarsProfile.model');
 const Transaction = require('../transactions/transaction.model');
 const Category = require('../categories/category.model');
@@ -8,6 +9,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const cloudinary = require('../../config/cloudinary');
+const { sendPasswordResetEmail } = require('../../services/emailService');
+const crypto = require('crypto');
 
 const generateToken = (id) => {
     const secret = process.env.JWT_SECRET;
@@ -496,6 +499,135 @@ const updateUserAvatar = async (req, res) => {
     }
 };
 
+// @desc    Request password reset
+// @route   POST /api/users/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      // Don't reveal if email exists or not for security
+      return res.json({ 
+        message: 'If an account with that email exists, a password reset link has been sent.' 
+      });
+    }
+
+    // Generate secure reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    // Save reset token to database
+    await PasswordReset.create({
+      userId: user._id,
+      token: resetToken,
+      email: user.email,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+    });
+
+    // Send password reset email
+    await sendPasswordResetEmail(user.email, resetToken, user.name);
+
+    res.json({ 
+      message: 'If an account with that email exists, a password reset link has been sent.' 
+    });
+  } catch (error) {
+    console.error('Error in forgot password:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
+
+// @desc    Verify reset token
+// @route   GET /api/users/reset-password/:token
+// @access  Public
+const verifyResetToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Find valid reset token
+    const resetRequest = await PasswordReset.findOne({
+      token,
+      used: false,
+      expiresAt: { $gt: new Date() }
+    }).populate('userId', 'name email');
+
+    if (!resetRequest) {
+      return res.status(400).json({ 
+        message: 'Invalid or expired reset token' 
+      });
+    }
+
+    res.json({
+      valid: true,
+      email: resetRequest.email,
+      userName: resetRequest.userId.name
+    });
+  } catch (error) {
+    console.error('Error verifying reset token:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
+
+// @desc    Reset password with token
+// @route   POST /api/users/reset-password
+// @access  Public
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ 
+        message: 'Token and new password are required' 
+      });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ 
+        message: 'Password must be at least 8 characters long' 
+      });
+    }
+
+    // Find valid reset token
+    const resetRequest = await PasswordReset.findOne({
+      token,
+      used: false,
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!resetRequest) {
+      return res.status(400).json({ 
+        message: 'Invalid or expired reset token' 
+      });
+    }
+
+    // Find user and update password
+    const user = await User.findById(resetRequest.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update password (will be hashed by pre-save middleware)
+    user.password = newPassword;
+    await user.save();
+
+    // Mark reset token as used
+    resetRequest.used = true;
+    await resetRequest.save();
+
+    res.json({ 
+      message: 'Password reset successfully. You can now login with your new password.' 
+    });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
+
 module.exports = {
     getUsers,
     getUserById,
@@ -508,5 +640,8 @@ module.exports = {
     suggestInvestableIncome,
     changePassword,
     deleteAccount,
-    updateUserAvatar
+    updateUserAvatar,
+    forgotPassword,
+    verifyResetToken,
+    resetPassword
 };

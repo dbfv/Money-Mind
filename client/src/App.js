@@ -15,6 +15,8 @@ import InvestmentPage from './screens/InvestmentPage/InvestmentPage';
 import ProfilePage from './screens/ProfilePage/ProfilePage';
 import SettingsPage from './screens/SettingsPage/SettingsPage';
 import AdminPage from './screens/AdminPage/AdminPage';
+import ForgotPasswordPage from './screens/ForgotPasswordPage/ForgotPasswordPage';
+import ResetPasswordPage from './screens/ResetPasswordPage/ResetPasswordPage';
 
 // Components
 import NavigationBar from './components/NavigationBar';
@@ -44,6 +46,8 @@ function App() {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
 
                     {/* Private routes */}
                     <Route path="/dashboard" element={

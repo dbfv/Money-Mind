@@ -9,6 +9,7 @@ spec.md
 acli.exe
 .agent.md
 *.md
+serviceAccountKey.json
 
 # Logs
 npm-debug.log*

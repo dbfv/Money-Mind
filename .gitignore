@@ -8,6 +8,7 @@ spec.txt
 spec.md
 acli.exe
 .agent.md
+*.md
 
 # Logs
 npm-debug.log*

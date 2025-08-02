@@ -14,6 +14,7 @@ const categoryRoutes = require('./api/categories/category.routes');
 const calendarEventRoutes = require('./api/calendarEvents/calendarEvent.routes');
 const chatHistoryRoutes = require('./api/chatHistories/chatHistory.routes');
 const aiRoutes = require('./api/ai/ai.routes');
+const adminRoutes = require('./api/admin/admin.routes');
 const aiService = require('./services/aiService');
 const predictionService = require('./services/predictionService');
 
@@ -53,6 +54,7 @@ categoryRoutes(app);
 calendarEventRoutes(app);
 chatHistoryRoutes(app);
 aiRoutes(app);
+adminRoutes(app);
 
 // Socket.IO for real-time chat
 io.on('connection', (socket) => {

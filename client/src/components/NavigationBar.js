@@ -12,12 +12,14 @@ const NavigationBar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [userAvatar, setUserAvatar] = useState('');
     const [userName, setUserName] = useState('');
+    const [userRole, setUserRole] = useState('user');
 
     const navItems = [
         { name: 'Dashboard', path: '/dashboard', icon: '📊' },
         { name: 'Journal', path: '/journal', icon: '📝' },
         { name: 'Calendar', path: '/calendar', icon: '📅' },
         { name: 'Investments', path: '/investments', icon: '📈' },
+        ...(userRole === 'admin' ? [{ name: 'Admin', path: '/admin', icon: '👑' }] : []),
     ];
 
     // Fetch user profile data including avatar
@@ -37,6 +39,7 @@ const NavigationBar = () => {
                     const data = await response.json();
                     setUserAvatar(data.avatar || '');
                     setUserName(data.name || '');
+                    setUserRole(data.role || 'user');
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error);

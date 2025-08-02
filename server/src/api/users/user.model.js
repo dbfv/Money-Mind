@@ -23,6 +23,11 @@ const userSchema = new Schema({
     type: Number,
     required: [true, 'Age is required'],
   },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
   avatar: {
     type: String,
     default: '', // Default empty string, will be populated with Cloudinary URL

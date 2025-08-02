@@ -14,6 +14,7 @@ import CategoryManagementPage from './screens/CategoryManagementPage';
 import InvestmentPage from './screens/InvestmentPage/InvestmentPage';
 import ProfilePage from './screens/ProfilePage/ProfilePage';
 import SettingsPage from './screens/SettingsPage/SettingsPage';
+import AdminPage from './screens/AdminPage/AdminPage';
 
 // Components
 import NavigationBar from './components/NavigationBar';
@@ -90,6 +91,12 @@ function App() {
                     <Route path="/settings" element={
                         <PrivateRoute>
                             <SettingsPage />
+                        </PrivateRoute>
+                    } />
+
+                    <Route path="/admin" element={
+                        <PrivateRoute>
+                            <AdminPage />
                         </PrivateRoute>
                     } />
 
